@@ -83,37 +83,100 @@ The **Antra Toolkit** is a comprehensive collection of scripts and tools develop
 
 ## Getting Started
 
+### Prerequisites
+
+Before running any scripts, make sure to set up the required environment and proxy.
+
+### **MITM Proxy Setup**
+
+Most scripts rely on a proxy server for handling requests. Follow these steps to set it up:
+
+1. **Install MITM Proxy Server**:
+
+   - On Windows, download and install the MITM proxy server from [mitmproxy.org](https://mitmproxy.org/).
+
+2. **Install Python MITM Package**:
+
+   ```bash
+   py -m pip install mitmproxy
+   ```
+
+3. **Start the MITM Proxy Server**:
+
+   - Run the following command to start the server:
+     ```bash
+     & "C:\Program Files\mitmproxy\bin\mitmweb.exe" --set block_global=false --ssl-insecure --listen-port 8082 -s proxy24m.py
+     ```
+   - This command:
+     - Disables global blocking.
+     - Ignores SSL certificates.
+     - Sets the proxy listening port to `8082`.
+     - Loads the `proxy24m.py` script to handle proxy operations.
+
+4. **Verify Proxy Setup**:
+   - Ensure your proxy is active and running before executing any scripts.
+
+---
+
 ### Installation
 
 1. Clone this repository:
+
    ```bash
-   git clone https://github.com/your-repo/antra.git
+   git clone https://github.com/dewebdes/antra.git
    cd antra
    ```
+
 2. Install the required dependencies:
 
    ```bash
    npm install
    ```
 
-   Refer to the `package.json` for a full list of development dependencies:
-
-   - `axios`, `express`, `playwright`, and others for handling requests, data processing, and browser automation.
-
 3. Set up Python environment (if using `klines_trend_analysis.py`):
    ```bash
    pip install -r requirements.txt
    ```
 
-### Running the Tools
+---
 
-- Each tool is designed for a specific purpose. Here’s an example for running `signal.js`:
+## Running the Tools
+
+Each tool is designed for a specific purpose. Here’s how you can execute them:
+
+### Scripts:
+
+- **Start fetching kline data (default):**
   ```bash
-  node signal.js
+  npm run fetch-data
   ```
-- For Python scripts like `klines_trend_analysis.py`:
+- **Run market analysis (`signal.js`):**
   ```bash
-  python klines_trend_analysis.py
+  npm run run-signal
+  ```
+- **Evaluate market potential for specific funds:**
+  ```bash
+  npm run run-api
+  ```
+- **Analyze trends with Fibonacci (`pond.js`):**
+  ```bash
+  npm run run-pond
+  ```
+- **Monitor prices with alerts:**
+  ```bash
+  npm run run-fibonacci-alert
+  ```
+- **Compare coins vs BTC trends:**
+  ```bash
+  npm run run-coin-vs-btc
+  ```
+- **Estimate coin price at BTC target:**
+  ```bash
+  npm run run-btc-estimator
+  ```
+- **Perform long-term trend analysis:**
+  ```bash
+  npm run run-trend-analysis
   ```
 
 ---
