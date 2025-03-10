@@ -192,7 +192,7 @@ With Antra, every analysis is a step toward enlightenment in the complex world o
 
 ---
 
-## Methodology
+## Methodology (<a href="https://www.youtube.com/channel/UCpzaAyoepAWcNI6HdoFewHg">Watch on YOUTUBE</a>)
 
 <img src="https://github.com/dewebdes/Antra/blob/main/mindmap.png" alt="trade hacking mindmap" />
 
