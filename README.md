@@ -192,12 +192,10 @@ With Antra, every analysis is a step toward enlightenment in the complex world o
 
 ---
 
-## Contributions
-
-Contributions are welcome! Feel free to submit issues or create pull requests to enhance Antra’s capabilities further.
-
----
-
 ## Methodology
 
 <img src="https://github.com/dewebdes/Antra/blob/main/mindmap.png" alt="trade hacking mindmap" />
+
+## Contributions
+
+Contributions are welcome! Feel free to submit issues or create pull requests to enhance Antra’s capabilities further.
