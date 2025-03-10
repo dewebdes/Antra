@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trade API</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      input,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #result {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Trade API</h1>
+      <div>
+        <h2>Risk calculation</h2>
+        <input type="text" id="coin" placeholder="Enter coin" />
+        <input type="number" id="money" placeholder="Enter money" />
+        <button onclick="sendInput()">Submit</button>
+        <p id="result"></p>
+      </div>
+    </div>
+
+    <script>
+      async function sendInput() {
+        document.getElementById("result").innerText = "";
+        const coin = document.getElementById("coin").value;
+        const money = document.getElementById("money").value;
+        const response = await fetch("/process", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({ coin, money }),
+        });
+        const data = await response.json();
+        document.getElementById("result").innerText = data.result;
+      }
+    </script>
+  </body>
+</html>
