@@ -1,4 +1,7 @@
-# Antra
+<p align="center">
+  <img src="https://github.com/dewebdes/Antra/blob/main/public/Antra.png" alt="Partizan Logo" width="100" height="100">
+<br>
+<strong align="center"># Antra</strong>
 
 _"Antra," inspired by an ancient tale, represents the mystical serpent symbolizing wisdom, bravery, and inner strength. In this legend, Antra was a magical snake that illuminated the paths of heroes in search of hidden treasures during the darkness of night. It stood as a beacon, transforming obscurity into light and unveiling concealed mysteries. The name "Antra" became synonymous with enlightenment and decoding secrets, embodying the power of transformation and creation wherever it ventured._
 
