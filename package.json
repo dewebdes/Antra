@@ -1,0 +1,57 @@
+{
+  "name": "antra",
+  "version": "1.0.0",
+  "description": "Antra - A comprehensive toolkit inspired by wisdom, bravery, and inner strength, designed for cryptocurrency analysis and insights.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node fetchCoinData.js",
+    "fetch-data": "node fetchCoinData.js",
+    "run-signal": "node signal.js",
+    "run-api": "node api.js",
+    "run-pond": "node pond.js",
+    "run-fibonacci-alert": "node fibonacci_alert.js",
+    "run-coin-vs-btc": "node coin_vs_btc.js",
+    "run-btc-estimator": "node btc_price_estimator.js",
+    "run-trend-analysis": "python klines_trend_analysis.py"
+  },
+  "keywords": [
+    "cryptocurrency",
+    "analysis",
+    "kline",
+    "fibonacci",
+    "crypto-tools",
+    "market-prediction"
+  ],
+  "author": [
+    "eynikave",
+    "copilot (Your AI Companion)"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "audio-loader": "^1.0.3",
+    "audio-play": "^2.3.1",
+    "axios": "^1.8.1",
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2",
+    "http-proxy": "^1.18.1",
+    "play-sound": "^1.1.6",
+    "playwright": "^1.50.1",
+    "prompt-sync": "^4.2.0",
+    "random-useragent": "^0.5.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.1.4",
+    "eslint": "^8.37.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dewebdes/antra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dewebdes/antra/issues"
+  },
+  "homepage": "https://github.com/dewebdes/antra#readme"
+}
