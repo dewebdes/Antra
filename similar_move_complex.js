@@ -306,7 +306,10 @@ async function main() {
     const startTimestamp = klines[bestMatch.startIndex][0]; // Get timestamp from the matching pattern
     const startDate = new Date(startTimestamp * 1000); // Convert to a readable date
     const startDayInWords = startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    console.log(`Start Date of Similar Pattern: ${startDayInWords}`); // Added this log
+    console.log(`Start Date of Similar Pattern: ${startDayInWords}`); // Log the start date
+
+    // Log the predicted prices
+    console.log("Predicted Prices for Next Days:", predictedPrices);
 
     // Generate the charts
     await createHTMLChartWithChartJS(
