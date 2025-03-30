@@ -280,17 +280,42 @@ async function main() {
     const currentPrices = klines.slice(-effectiveDayCount).map(kline => kline[4]);
     const similarPrices = klines.slice(0, effectiveDayCount + xDaysLater).map(kline => kline[4]);
 
-    // Step: Predict prices for the next x days
+    const { bestMatch } = findSimilarPatternsWithPrediction(
+        {
+            price: currentPrices.slice(-effectiveDayCount),
+            volume: klines.slice(-effectiveDayCount).map(kline => kline[5]),
+        },
+        {
+            price: klines.map(kline => kline[4]),
+            volume: klines.map(kline => kline[5]),
+        },
+        effectiveDayCount,
+        { price: 0.6, volume: 0.4 },
+        xDaysLater
+    );
+
+    console.log("Best Match:", bestMatch);
+
+    const similarPricesSegment = klines.slice(bestMatch.startIndex, bestMatch.startIndex + effectiveDayCount).map(kline => kline[4]);
+    const currentLastPrice = currentPrices[currentPrices.length - 1];
+
+    // Step: Predict the next x days' prices
     const predictedPrices = predictNextPrices(currentPrices, similarPrices, xDaysLater);
 
-    console.log("Predicted Prices:", predictedPrices);
+    // Log the start date of the similar pattern
+    const startTimestamp = klines[bestMatch.startIndex][0]; // Get timestamp from the matching pattern
+    const startDate = new Date(startTimestamp * 1000); // Convert to a readable date
+    const startDayInWords = startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    console.log(`Start Date of Similar Pattern: ${startDayInWords}`); // Added this log
 
+    // Generate the charts
     await createHTMLChartWithChartJS(
         currentPrices,
-        similarPrices.slice(0, effectiveDayCount), // Use only similar segment for comparison
+        similarPricesSegment,
         predictedPrices,
         coin
     );
 }
+
 
 main();
