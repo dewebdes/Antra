@@ -32,8 +32,42 @@ function calculateDistance(array1, array2) {
     );
 }
 
-// Function to find similar patterns dynamically
-function findSimilarPatterns(recentChanges, historicalChanges, windowSize, weights, initialThreshold = 10) {
+// Function to predict future prices based on detected similar movements
+function predictNextPrices(currentPrices, similarPrices, xDaysLater) {
+    // Step 1: Calculate percentage movements for current and similar prices
+    const currentMovements = [];
+    const similarMovements = [];
+    for (let i = 1; i < currentPrices.length; i++) {
+        const currentChange = ((currentPrices[i] - currentPrices[i - 1]) / currentPrices[i - 1]) * 100;
+        const similarChange = ((similarPrices[i] - similarPrices[i - 1]) / similarPrices[i - 1]) * 100;
+        currentMovements.push(currentChange);
+        similarMovements.push(similarChange);
+    }
+
+    // Step 2: Calculate percentage differences between movements
+    const movementDifferences = currentMovements.map((movement, i) => movement - similarMovements[i]);
+
+    // Step 3: Calculate average difference
+    const averageDifference = movementDifferences.reduce((sum, diff) => sum + diff, 0) / movementDifferences.length;
+
+    // Step 4: Predict future prices using next x movements from similarPrices
+    const predictedPrices = [];
+    let lastPrice = currentPrices[currentPrices.length - 1]; // Start from the last price in currentPrices
+    for (let i = currentPrices.length; i < currentPrices.length + xDaysLater; i++) {
+        const similarNextMovement = ((similarPrices[i] - similarPrices[i - 1]) / similarPrices[i - 1]) * 100;
+        const adjustedMovement = similarNextMovement + averageDifference; // Adjusted movement
+        const predictedPrice = lastPrice * (1 + adjustedMovement / 100); // Apply movement
+        predictedPrices.push(parseFloat(predictedPrice.toFixed(2))); // Format to 2 decimals
+        lastPrice = predictedPrice; // Update last price for next iteration
+    }
+
+    return predictedPrices;
+}
+
+
+
+// Function to find similar patterns and predict next days' movements
+function findSimilarPatternsWithPrediction(recentChanges, historicalChanges, windowSize, weights, xDaysLater, initialThreshold = 10) {
     const similarities = [];
     let threshold = initialThreshold;
 
@@ -58,17 +92,13 @@ function findSimilarPatterns(recentChanges, historicalChanges, windowSize, weigh
         matches = similarities.filter(similarity => similarity.score < threshold);
     }
 
-    return matches.length > 0 ? matches : [similarities.reduce((closest, current) =>
-        (closest.score < current.score ? closest : current), { score: Infinity })];
-}
+    const bestMatch = matches.length > 0 ? matches[0] : similarities.reduce((closest, current) =>
+        (closest.score < current.score ? closest : current), { score: Infinity });
 
-// Function to calculate moving averages
-function calculateMovingAverage(data, period) {
-    return data.map((_, index) => {
-        if (index < period - 1) return null; // Not enough data points
-        const slice = data.slice(index - period + 1, index + 1);
-        return slice.reduce((sum, value) => sum + value, 0) / period;
-    });
+    // Extract `x` days later movements for prediction
+    const predictedMovements = historicalChanges.price.slice(bestMatch.startIndex + windowSize, bestMatch.startIndex + windowSize + xDaysLater);
+
+    return { bestMatch, predictedMovements };
 }
 
 // Function to fetch system time from CoinEx API
@@ -95,44 +125,53 @@ async function fetchDailyKlines(coin, sysTime) {
         return null;
     }
 }
+
 // Function to create the HTML chart using Chart.js
-async function createHTMLChartWithChartJS(currentPrices, similarPrices, coin) {
+async function createHTMLChartWithChartJS(currentPrices, similarPrices, predictedPrices, coin) {
     const htmlContent = `
         <!DOCTYPE html>
-        <html>
+        <html lang="en">
         <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${coin} Price Charts</title>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <style>
                 body {
+                    font-family: Arial, sans-serif;
                     margin: 0;
                     padding: 0;
                     display: flex;
-                    flex-direction: column; /* Stack charts vertically */
+                    flex-direction: column;
+                    align-items: center;
                 }
                 canvas {
-                    width: 100%; /* Full width for each chart */
-                    height: 400px; /* Fixed height */
+                    max-width: 90%;
+                    height: 300px;
+                    margin: 20px 0;
                 }
             </style>
         </head>
         <body>
-            <div>
-                <canvas id="currentChart"></canvas>
-            </div>
-            <div>
-                <canvas id="similarChart"></canvas>
-            </div>
+            <h1>${coin} Price Analysis</h1>
+            <canvas id="currentChart"></canvas>
+            <canvas id="similarChart"></canvas>
+            <canvas id="predictedChart"></canvas>
+
             <script>
                 const currentPrices = ${JSON.stringify(currentPrices)};
                 const similarPrices = ${JSON.stringify(similarPrices)};
-                const xLabels = Array.from({ length: currentPrices.length }, (_, i) => i + 1);
+                const predictedPrices = ${JSON.stringify(predictedPrices)};
 
-                // Current Movement Chart
-                const currentCtx = document.getElementById('currentChart').getContext('2d');
-                new Chart(currentCtx, {
+                const labelsCurrent = Array.from({ length: currentPrices.length }, (_, i) => \`Day \${i + 1}\`);
+                const labelsPredicted = Array.from({ length: predictedPrices.length }, (_, i) => \`Day \${i + 1}\`);
+
+                // Current Prices Chart
+                const currentChartCtx = document.getElementById('currentChart').getContext('2d');
+                new Chart(currentChartCtx, {
                     type: 'line',
                     data: {
-                        labels: xLabels,
+                        labels: labelsCurrent,
                         datasets: [{
                             label: 'Current Prices',
                             data: currentPrices,
@@ -144,44 +183,22 @@ async function createHTMLChartWithChartJS(currentPrices, similarPrices, coin) {
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return 'Price: ' + context.raw;
-                                    }
-                                }
-                            }
+                            legend: { display: true }
                         },
                         scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Day (X-Axis)'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Closing Prices (Y-Axis)'
-                                },
-                                beginAtZero: false
-                            }
+                            x: { title: { display: true, text: 'Days' } },
+                            y: { title: { display: true, text: 'Prices (USD)' } }
                         }
                     }
                 });
 
-                // Similar Movement Chart
-                const similarCtx = document.getElementById('similarChart').getContext('2d');
-                new Chart(similarCtx, {
+                // Similar Prices Chart
+                const similarChartCtx = document.getElementById('similarChart').getContext('2d');
+                new Chart(similarChartCtx, {
                     type: 'line',
                     data: {
-                        labels: xLabels,
+                        labels: labelsCurrent,
                         datasets: [{
                             label: 'Similar Prices',
                             data: similarPrices,
@@ -193,34 +210,39 @@ async function createHTMLChartWithChartJS(currentPrices, similarPrices, coin) {
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return 'Price: ' + context.raw;
-                                    }
-                                }
-                            }
+                            legend: { display: true }
                         },
                         scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Day (X-Axis)'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Closing Prices (Y-Axis)'
-                                },
-                                beginAtZero: false
-                            }
+                            x: { title: { display: true, text: 'Days' } },
+                            y: { title: { display: true, text: 'Prices (USD)' } }
+                        }
+                    }
+                });
+
+                // Predicted Prices Chart
+                const predictedChartCtx = document.getElementById('predictedChart').getContext('2d');
+                new Chart(predictedChartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labelsPredicted,
+                        datasets: [{
+                            label: 'Predicted Prices',
+                            data: predictedPrices,
+                            borderColor: 'red',
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: true }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Days Ahead' } },
+                            y: { title: { display: true, text: 'Predicted Prices (USD)' } }
                         }
                     }
                 });
@@ -229,7 +251,7 @@ async function createHTMLChartWithChartJS(currentPrices, similarPrices, coin) {
         </html>
     `;
 
-    const filePath = path.join(__dirname, `${coin}_movement_comparison.html`);
+    const filePath = path.join(__dirname, `${coin}_charts.html`);
     fs.writeFileSync(filePath, htmlContent);
 
     const browser = await chromium.launch({
@@ -253,37 +275,20 @@ async function main() {
     }
 
     const dayCount = parseInt(prompt("Enter the number of days for comparison: "), 10);
-    const effectiveDayCount = Math.min(dayCount, klines.length); // Adjust day count
-    const percentageChanges = calculatePercentageChanges(klines);
-    const volumes = klines.map(kline => kline[5]); // Extract volume data
+    const xDaysLater = parseInt(prompt("Enter the number of days to predict ahead: "), 10);
+    const effectiveDayCount = Math.min(dayCount, klines.length);
+    const currentPrices = klines.slice(-effectiveDayCount).map(kline => kline[4]);
+    const similarPrices = klines.slice(0, effectiveDayCount + xDaysLater).map(kline => kline[4]);
 
-    const recentData = {
-        price: percentageChanges.slice(-effectiveDayCount),
-        volume: volumes.slice(-effectiveDayCount),
-    };
+    // Step: Predict prices for the next x days
+    const predictedPrices = predictNextPrices(currentPrices, similarPrices, xDaysLater);
 
-    const historicalData = {
-        price: percentageChanges,
-        volume: volumes,
-    };
-
-    const weights = { price: 0.6, volume: 0.4 }; // Dynamic weights for scoring
-    let similarPatterns = findSimilarPatterns(recentData, historicalData, effectiveDayCount, weights);
-
-    // Ensure fallback result
-    if (similarPatterns.length === 0) {
-        console.log("No similar patterns found within strict conditions. Returning closest match.");
-        similarPatterns = [findSimilarPatterns(recentData, historicalData, effectiveDayCount, weights, Infinity)[0]];
-    }
-
-    console.log("Similar Patterns:", similarPatterns);
-
-    const bestMatch = similarPatterns[0];
-    const similarPrices = klines.slice(bestMatch.startIndex, bestMatch.startIndex + effectiveDayCount).map(kline => kline[4]);
+    console.log("Predicted Prices:", predictedPrices);
 
     await createHTMLChartWithChartJS(
-        klines.slice(-effectiveDayCount).map(kline => kline[4]),
-        similarPrices,
+        currentPrices,
+        similarPrices.slice(0, effectiveDayCount), // Use only similar segment for comparison
+        predictedPrices,
         coin
     );
 }
