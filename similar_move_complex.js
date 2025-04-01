@@ -71,8 +71,10 @@ function findSimilarPatternsWithPrediction(recentChanges, historicalChanges, win
     const similarities = [];
     let threshold = initialThreshold;
 
-    // Calculate all similarity scores
-    for (let i = 0; i <= historicalChanges.price.length - windowSize; i++) {
+    // Limit the search to exclude the most recent segment (current `x` days)
+    const historicalLimit = historicalChanges.price.length - windowSize - xDaysLater;
+
+    for (let i = 0; i <= historicalLimit; i++) { // Updated condition
         const segment = {
             price: historicalChanges.price.slice(i, i + windowSize),
             volume: historicalChanges.volume.slice(i, i + windowSize),
@@ -100,6 +102,7 @@ function findSimilarPatternsWithPrediction(recentChanges, historicalChanges, win
 
     return { bestMatch, predictedMovements };
 }
+
 
 // Function to fetch system time from CoinEx API
 async function getSystemTime() {
@@ -278,11 +281,11 @@ async function main() {
     const xDaysLater = parseInt(prompt("Enter the number of days to predict ahead: "), 10);
     const effectiveDayCount = Math.min(dayCount, klines.length);
     const currentPrices = klines.slice(-effectiveDayCount).map(kline => kline[4]);
-    const similarPrices = klines.slice(0, effectiveDayCount + xDaysLater).map(kline => kline[4]);
+    const similarPrices = klines.map(kline => kline[4]);
 
-    const { bestMatch } = findSimilarPatternsWithPrediction(
+    const { bestMatch, predictedMovements } = findSimilarPatternsWithPrediction(
         {
-            price: currentPrices.slice(-effectiveDayCount),
+            price: currentPrices,
             volume: klines.slice(-effectiveDayCount).map(kline => kline[5]),
         },
         {
@@ -299,19 +302,15 @@ async function main() {
     const similarPricesSegment = klines.slice(bestMatch.startIndex, bestMatch.startIndex + effectiveDayCount).map(kline => kline[4]);
     const currentLastPrice = currentPrices[currentPrices.length - 1];
 
-    // Step: Predict the next x days' prices
     const predictedPrices = predictNextPrices(currentPrices, similarPrices, xDaysLater);
 
-    // Log the start date of the similar pattern
-    const startTimestamp = klines[bestMatch.startIndex][0]; // Get timestamp from the matching pattern
-    const startDate = new Date(startTimestamp * 1000); // Convert to a readable date
+    const startTimestamp = klines[bestMatch.startIndex][0];
+    const startDate = new Date(startTimestamp * 1000);
     const startDayInWords = startDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    console.log(`Start Date of Similar Pattern: ${startDayInWords}`); // Log the start date
+    console.log(`Start Date of Similar Pattern: ${startDayInWords}`);
 
-    // Log the predicted prices
     console.log("Predicted Prices for Next Days:", predictedPrices);
 
-    // Generate the charts
     await createHTMLChartWithChartJS(
         currentPrices,
         similarPricesSegment,
@@ -319,6 +318,7 @@ async function main() {
         coin
     );
 }
+
 
 
 main();
