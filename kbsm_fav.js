@@ -4,22 +4,31 @@ const { chromium } = require('playwright');
 const prompt = require('prompt-sync')(); // Library for user input via prompt
 
 let refreshCounter = 0; // Track the number of refreshes
+let systime = null; // Global variable to store system time
 
 const axiosInstance = axios.create({
     proxy: { host: '127.0.0.1', port: 8082 },
     httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
 });
 
-async function fetchSystemTime() {
-    const response = await axiosInstance.get('https://www.coinex.com/res/system/time');
-    return response.data.data.current_timestamp;
+// Fetch system time and update the global variable
+async function updateSystemTime() {
+    try {
+        console.log("Fetching system time...");
+        const response = await axiosInstance.get('https://www.coinex.com/res/system/time');
+        systime = response.data.data.current_timestamp;
+        console.log(`System time updated: ${systime}`);
+    } catch (error) {
+        console.error("Failed to fetch system time:", error.message);
+        systime = null;
+    }
 }
 
+// Fetch Klines for a coin
 async function fetchKlines(coin, interval) {
     const market = `${coin}USDT`;
-    const sysTime = await fetchSystemTime();
     const response = await axiosInstance.get(
-        `https://www.coinex.com/res/market/kline?market=${market}&start_time=0&end_time=${sysTime}&interval=${interval}`
+        `https://www.coinex.com/res/market/kline?market=${market}&start_time=0&end_time=${systime}&interval=${interval}`
     );
     return response.data.data;
 }
@@ -72,12 +81,32 @@ async function analyzeCoin(coin) {
         // Calculate the percentage remaining to enter (always positive)
         const percentRemainingToEnter = Math.abs(((enterPoint - currentPrice) / enterPoint) * 100);
 
+        // Calculate oneDayAgo using the global systime
+        const oneDayAgo = systime - 86400; // Subtract 24 hours in seconds
+        const klinesLast24h = klines.filter(k => k[0] >= oneDayAgo); // Filter Klines within the last 24 hours
+        const redFlag = klinesLast24h.some(k => {
+            const prices = [Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4])]; // Extract all relevant prices
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            return enterPoint >= minPrice && enterPoint <= maxPrice; // Check range
+        });
+
         console.log(`Analysis for ${coin} completed. Current Price: ${currentPrice}`);
-        return { coin, currentPrice, enterPoint, exitPoint, percentRemainingToEnter: percentRemainingToEnter.toFixed(2) };
+        return { coin, currentPrice, enterPoint, exitPoint, percentRemainingToEnter: percentRemainingToEnter.toFixed(2), redFlag };
     } catch (error) {
         console.error(`Error analyzing ${coin}: ${error.message}`);
         return null;
     }
+}
+
+// Analyze all coins sequentially
+async function analyzeCoinsSequentially(coins) {
+    const results = [];
+    for (const coin of coins) {
+        const result = await analyzeCoin(coin); // Wait for each request to complete
+        results.push(result);
+    }
+    return results;
 }
 
 // Generate HTML Table
@@ -102,6 +131,7 @@ async function updateHtmlTable(browserPage, results) {
                 tr:nth-child(even) { background-color: #f9f9f9; }
                 tr:hover { background-color: #f1f1f1; }
                 .refresh-count { font-size: 16px; margin: 10px 0; }
+                .red-flag { background-color: #ffdddd; } /* Highlight rows with red flag */
             </style>
         </head>
         <body>
@@ -115,16 +145,18 @@ async function updateHtmlTable(browserPage, results) {
                         <th>Enter Price</th>
                         <th>Exit Price</th>
                         <th>Percent Remaining to Enter (%)</th>
+                        <th>Red Flag</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${sortedResults.map(result => `
-                        <tr>
+                        <tr class="${result.redFlag ? 'red-flag' : ''}">
                             <td>${result.coin}</td>
                             <td>${result.currentPrice}</td>
                             <td>${result.enterPoint}</td>
                             <td>${result.exitPoint}</td>
                             <td>${result.percentRemainingToEnter}</td>
+                            <td>${result.redFlag ? '🚩' : ''}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -151,8 +183,14 @@ async function main() {
 
     console.log("Fetching initial data and generating table...");
     async function refreshData() {
-        console.log("Fetching and analyzing 5m Klines...");
-        const results = await Promise.all(coins.map(coin => analyzeCoin(coin)));
+        await updateSystemTime(); // Fetch and update system time before the loop
+        if (systime === null) {
+            console.error("System time is not available. Skipping data refresh.");
+            return;
+        }
+
+        console.log("Fetching and analyzing 5m Klines sequentially...");
+        const results = await analyzeCoinsSequentially(coins); // Sequential handling
         await updateHtmlTable(page, results);
         console.log("5m Klines data refreshed.");
     }
@@ -166,7 +204,7 @@ async function main() {
     // Update just the current prices every 1 minute
     setInterval(async () => {
         console.log("Fetching current prices...");
-        const updatedResults = await Promise.all(coins.map(coin => analyzeCoin(coin)));
+        const updatedResults = await analyzeCoinsSequentially(coins); // Sequential handling
         await updateHtmlTable(page, updatedResults);
         console.log("Current prices refreshed in HTML log.");
     }, 60000);
