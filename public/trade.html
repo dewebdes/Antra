@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Trade Orders</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .toolbar {
+        height: 10%;
+        background-color: #f4f4f4;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+      }
+      .button-primary {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      .button-primary:hover {
+        background-color: #0056b3;
+      }
+      .tables-container {
+        height: 90%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        overflow-y: auto;
+        display: block;
+        height: 30%;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background-color: #007bff;
+        color: white;
+      }
+      .scrollable {
+        height: 30%;
+        overflow-y: scroll;
+      }
+      .dialog {
+        display: none;
+        position: fixed;
+        top: 20%;
+        left: 30%;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 20px;
+        z-index: 1000;
+      }
+      .dialog input {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 5px;
+      }
+      .refresh-log {
+        font-size: 18px;
+        color: #007bff;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="button-primary" id="new-buy-button">New BUY Offer</button>
+      <div class="refresh-log">
+        <span>Page Refresh Count:</span>
+        <span id="refreshCount">0</span>
+      </div>
+    </div>
+
+    <!-- Tables -->
+    <div class="tables-container">
+      <!-- Buy Orders Table -->
+      <table id="buy-orders">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Current Price</th>
+            <th>Percent Remaining to Execute</th>
+            <th>Status</th>
+            <th>Money</th>
+            <th>Value</th>
+            <th>Profit (%)</th>
+            <th>Cancel</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <!-- Sell Orders Table -->
+      <table id="sell-orders">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Current Price</th>
+            <th>Percent Remaining to Execute</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Value</th>
+            <th>Current Value</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <!-- Profit Log Table -->
+      <table id="profit-log">
+        <thead>
+          <tr>
+            <th>Coin</th>
+            <th>Amount</th>
+            <th>Buy Price</th>
+            <th>Sell Price</th>
+            <th>Profit</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Dialog for New BUY Offer -->
+    <div id="buy-offer-dialog" class="dialog">
+      <h3>New BUY Offer</h3>
+      <label for="coin-name">Coin Name:</label>
+      <input type="text" id="coin-name" placeholder="Enter coin name" /><br />
+      <label for="price">Price:</label>
+      <input type="number" id="price" placeholder="Enter price" /><br />
+      <label for="money">Money:</label>
+      <input type="number" id="money" placeholder="Enter money amount" /><br />
+      <label for="profit">Profit (%):</label>
+      <input
+        type="number"
+        id="profit"
+        placeholder="Enter profit percentage (default: 3)"
+      /><br />
+      <button id="submit-buy-offer" class="button-primary">Submit</button>
+      <button
+        id="cancel-buy-offer"
+        class="button-primary"
+        style="background-color: #dc3545"
+      >
+        Cancel
+      </button>
+    </div>
+
+    <script>
+      // Open the New BUY Offer Dialog
+      document
+        .getElementById("new-buy-button")
+        .addEventListener("click", function () {
+          const dialog = document.getElementById("buy-offer-dialog");
+          dialog.style.display = "block";
+        });
+
+      // Close the dialog when Cancel button is clicked
+      document
+        .getElementById("cancel-buy-offer")
+        .addEventListener("click", function () {
+          const dialog = document.getElementById("buy-offer-dialog");
+          dialog.style.display = "none";
+        });
+
+      // Update Refresh Count in HTML
+      let refreshCount = 0; // Initialize the refresh count
+      document.getElementById("refreshCount").textContent = refreshCount; // Display initial count
+    </script>
+  </body>
+</html>
