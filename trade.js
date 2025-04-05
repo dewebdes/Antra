@@ -113,6 +113,24 @@ async function updatePercentRemaining() {
 // Dynamically update the HTML table based on buy offers
 async function updateTable(buyOffers) {
     buyOffers = loadData(localDatabase); // Load buy offers from JSON
+
+    // Filter out "success" records
+    buyOffers = buyOffers.filter(offer => offer.status !== "success");
+
+    // Refresh current price and percent remaining before rendering the table
+    for (const offer of buyOffers) {
+        const currentPrice = await getFinalPrice(offer.name);
+        if (currentPrice) {
+            offer.percentRemaining = Math.abs(((offer.price - currentPrice) / offer.price) * 100).toFixed(2);
+            offer.currentPrice = currentPrice; // Update with the latest price
+        } else {
+            offer.currentPrice = "Error fetching price";
+        }
+    }
+
+    // Sort buy offers by percentRemaining (low to high)
+    buyOffers.sort((a, b) => parseFloat(a.percentRemaining) - parseFloat(b.percentRemaining));
+
     await page.evaluate(buyOffers => {
         const tableBody = document.querySelector('#buy-orders tbody');
         tableBody.innerHTML = ''; // Clear existing rows
@@ -147,6 +165,8 @@ async function updateTable(buyOffers) {
         });
     }, buyOffers);
 }
+
+
 
 async function sellforce3(coin, damount) {
     const timestamp = Date.now();
@@ -244,6 +264,9 @@ async function sellforce3(coin, damount) {
 async function updateTableSell() {
     sellOrders = loadData(sellDatabase); // Load sell orders from JSON
 
+    // Filter out "success" records
+    sellOrders = sellOrders.filter(order => order.status !== "success");
+
     for (const order of sellOrders) {
         const currentPrice = await getFinalPrice(order.name); // Fetch current price for the coin
         if (currentPrice) {
@@ -257,6 +280,9 @@ async function updateTableSell() {
             order.currentValue = "Error"; // Set error if current price can't be fetched
         }
     }
+
+    // Sort sell orders by percentRemaining (low to high)
+    sellOrders.sort((a, b) => parseFloat(a.percentRemaining) - parseFloat(b.percentRemaining));
 
     saveData(sellDatabase, sellOrders); // Save updated sell orders back to JSON
 
@@ -282,39 +308,9 @@ async function updateTableSell() {
             `;
             tableBody.appendChild(newRow);
         });
-
-        // Attach cancel button event listeners for SELL orders
-        document.querySelectorAll('.sell-cancel-btn').forEach(button => {
-            button.addEventListener('click', async (event) => {
-                const coin = event.target.getAttribute('data-coin');
-                const orderId = event.target.getAttribute('data-id');
-                console.log(`Sell Cancel button clicked: Coin: ${coin}, Order ID: ${orderId}`);
-                if (window.cancelSellOrder) {
-                    await window.cancelSellOrder({ coin, orderId });
-                } else {
-                    console.error("cancelSellOrder function not defined!");
-                }
-            });
-        });
-
-        // Attach sellforce button event listeners for SELL orders
-        // Attach sellforce button event listeners for SELL orders
-        document.querySelectorAll('.sellforce-btn').forEach(button => {
-            button.addEventListener('click', async (event) => {
-                const coin = event.target.getAttribute('data-coin');
-                const amount = parseFloat(event.target.getAttribute('data-amount'));
-                console.log(`Sellforce triggered: Coin: ${coin}, Amount: ${amount}`);
-                if (window.sellforce3) {
-                    const result = await window.sellforce3(coin, amount);
-                    console.log(`Sellforce result: ${result}`);
-                } else {
-                    console.error("sellforce3 function not defined!");
-                }
-            });
-        });
-
     }, sellOrders);
 }
+
 
 
 
@@ -697,10 +693,17 @@ async function putMarketOrder(coin, money, limit, side, cid) {
 async function startPeriodicUpdates() {
     setInterval(async () => {
         console.log("Starting periodic updates...");
-        await fetchAllAssetPrices(); // Fetch all asset prices
-        await updatePercentRemaining(); // Update the buy orders table with current prices and percentages
+
+        // Step 1: Fetch updated asset prices
+        await fetchAllAssetPrices();
+
+        // Step 2: Update table data dynamically with new prices
+        await updatePercentRemaining(); // Updates buy table with current prices and percentages
+        await updateTableSell();       // Updates sell table with current prices and values
+        await updateTableProfit();     // Updates profit log table dynamically
     }, 60000); // Update every 60 seconds
 }
+
 
 // Main function to set up the browser, periodic updates, and start syncing
 async function main() {
