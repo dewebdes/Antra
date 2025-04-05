@@ -1,3 +1,4 @@
+const fs = require('fs');
 const axios = require('axios');
 const path = require('path');
 const { chromium } = require('playwright');
@@ -109,6 +110,28 @@ async function analyzeCoinsSequentially(coins) {
     return results;
 }
 
+// Load data from JSON files
+function loadJsonData(filePath) {
+    try {
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        return fileContent.trim() ? JSON.parse(fileContent) : [];
+    } catch (error) {
+        console.error(`Error loading JSON data from ${filePath}:`, error.message);
+        return [];
+    }
+}
+
+// Check if a coin exists in JSON files with `status: "pending"`
+function checkPendingStatus(coin) {
+    const buyOffers = loadJsonData('./public/buy_offers.json');
+    const sellOrders = loadJsonData('./public/sell_orders.json');
+
+    const inBuyOffers = buyOffers.some(offer => offer.name === coin && offer.status === "pending");
+    const inSellOrders = sellOrders.some(order => order.name === coin && order.status === "pending");
+
+    return inBuyOffers || inSellOrders; // Return true if the coin exists in either file with `pending` status
+}
+
 // Generate HTML Table
 async function updateHtmlTable(browserPage, results) {
     refreshCounter++; // Increment the refresh count
@@ -132,6 +155,7 @@ async function updateHtmlTable(browserPage, results) {
                 tr:hover { background-color: #f1f1f1; }
                 .refresh-count { font-size: 16px; margin: 10px 0; }
                 .red-flag { background-color: #ffdddd; } /* Highlight rows with red flag */
+                .green-flag { background-color: #ddffdd; } /* Highlight rows with green flag */
             </style>
         </head>
         <body>
@@ -146,17 +170,19 @@ async function updateHtmlTable(browserPage, results) {
                         <th>Exit Price</th>
                         <th>Percent Remaining to Enter (%)</th>
                         <th>Red Flag</th>
+                        <th>Green Flag</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${sortedResults.map(result => `
-                        <tr class="${result.redFlag ? 'red-flag' : ''}">
+                        <tr class="${result.redFlag ? 'red-flag' : checkPendingStatus(result.coin) ? 'green-flag' : ''}">
                             <td>${result.coin}</td>
                             <td>${result.currentPrice}</td>
                             <td>${result.enterPoint}</td>
                             <td>${result.exitPoint}</td>
                             <td>${result.percentRemainingToEnter}</td>
                             <td>${result.redFlag ? '🚩' : ''}</td>
+                            <td>${checkPendingStatus(result.coin) ? '✔️' : ''}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -169,6 +195,7 @@ async function updateHtmlTable(browserPage, results) {
     await browserPage.setContent(htmlContent); // Update the browser with new HTML content
 }
 
+// Main Script Logic
 // Main Script Logic
 async function main() {
     const coinsInput = prompt("Enter a list of coins (e.g., BTC,ETH,LTC): ");
