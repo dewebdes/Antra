@@ -48,6 +48,15 @@ function extractCoinPrices(assets, coins) {
     return livePrices;
 }
 
+// Determine the decimal precision of a number dynamically
+function getDecimalPrecision(price) {
+    const priceString = price.toString();
+    if (priceString.includes('.')) {
+        return priceString.split('.')[1].length; // Count decimal places
+    }
+    return 0; // No decimal points
+}
+
 // Fetch 5-minute K-lines for the last 24 hours
 async function fetch24hKlines(coin, sysTime) {
     const interval = 300; // 5-minute interval
@@ -63,45 +72,54 @@ async function fetch24hKlines(coin, sysTime) {
 }
 
 // Calculate min, max, total, current, and trend
-function calculateMovementData(klines, lastPrice, prevLastPrice = null) {
+function calculateMovementData(klines, lastPrice) {
     const minPrice = Math.min(...klines.map(k => Number(k[3]))); // Lowest price from K-lines
     const maxPrice = Math.max(...klines.map(k => Number(k[2]))); // Highest price from K-lines
     const firstOpen = Number(klines[0][1]); // Opening price
-    const finalMin = Math.min(minPrice, lastPrice); // Update if the last price is lower
-    const finalMax = Math.max(maxPrice, lastPrice); // Update if the last price is higher
 
-    // Percent movement calculations
-    const totalPercent = ((finalMax - finalMin) / finalMin) * 100;
-    const currentPercent = ((lastPrice - finalMin) / finalMin) * 100;
+    let finalMin = minPrice;
+    let finalMax = maxPrice;
 
-    // Determine trend (up/down)
-    let trend = null;
-    if (prevLastPrice !== null) {
-        trend = lastPrice > prevLastPrice ? 'up' : 'down';
-    } else {
-        trend = lastPrice > firstOpen ? 'up' : 'down'; // Initial trend based on K-lines
+    // Update min if last price falls below it
+    if (lastPrice < finalMin) {
+        finalMin = lastPrice; // Update min
+        console.log(`Min updated to ${finalMin} for last price ${lastPrice}.`);
     }
 
+    // Update max if last price exceeds it
+    if (lastPrice > finalMax) {
+        finalMax = lastPrice; // Update max
+        console.log(`Max updated to ${finalMax} for last price ${lastPrice}.`);
+    }
+
+    // Percent movement calculations (avoid issues with zero or small values)
+    const totalPercent = finalMin > 0 ? ((finalMax - finalMin) / finalMin) * 100 : 0;
+    const currentPercent = finalMin > 0 ? ((lastPrice - finalMin) / finalMin) * 100 : 0;
+
+    // Calculate daily trend (unchanging logic)
+    const trend = lastPrice > firstOpen ? 'up' : 'down';
+
     return {
-        minPrice: finalMin,
-        maxPrice: finalMax,
-        totalPercent: totalPercent.toFixed(2),
-        currentPercent: currentPercent.toFixed(2),
-        trend: trend // Include trend information
+        minPrice: Number(finalMin).toPrecision(getDecimalPrecision(finalMin)),
+        maxPrice: Number(finalMax).toPrecision(getDecimalPrecision(finalMax)),
+        lastPrice: Number(lastPrice).toPrecision(getDecimalPrecision(lastPrice)), // Include last price explicitly
+        totalPercent: Number(totalPercent).toPrecision(4), // Use dynamic precision
+        currentPercent: Number(currentPercent).toPrecision(4), // Use dynamic precision
+        trend: trend // Static daily trend
     };
 }
+
+
 
 // Customize the HTML content for the chart
 function customizeHtmlForChart(data, refreshCount) {
     const coinNames = data.map(entry => entry.coin);
-    const totalPercents = data.map(entry => parseFloat(entry.totalPercent)); // Total percent movement
-    const currentPercents = data.map(entry => parseFloat(entry.currentPercent)); // Current percent position
+    const totalPercents = data.map(entry => Number(entry.totalPercent)); // Total percent movement
+    const currentPercents = data.map(entry => Number(entry.currentPercent)); // Current percent position
     const colors = data.map(entry => (entry.trend === 'up' ? 'green' : 'red')); // Color based on trend
     const labels = data.map(
         entry =>
-            `${entry.coin}:<br>Min: ${entry.minPrice.toFixed(2)}<br>Max: ${entry.maxPrice.toFixed(
-                2
-            )}<br>Total: ${entry.totalPercent}%<br>Current: ${entry.currentPercent}%<br>Trend: ${entry.trend}`
+            `${entry.coin}:<br>Min: ${entry.minPrice}<br>Max: ${entry.maxPrice}<br>Last: ${entry.lastPrice}<br>Total: ${entry.totalPercent}%<br>Current: ${entry.currentPercent}%<br>Trend: ${entry.trend}`
     );
 
     return `
@@ -137,13 +155,13 @@ function customizeHtmlForChart(data, refreshCount) {
                             opacity: 1.0
                         },
                         name: 'Current Position',
-                        text: ${JSON.stringify(labels)}, // Tooltip with all details
+                        text: ${JSON.stringify(labels)}, // Tooltip with all details including last price
                         hoverinfo: 'text'
                     }
                 ];
 
                 const layout = {
-                    title: '24-Hour Coin Movements (Min, Max, Total, Current, Trend)',
+                    title: '24-Hour Coin Movements (Min, Max, Last, Total, Current, Trend)',
                     xaxis: { title: 'Coins' },
                     yaxis: { title: 'Percent Movement (%)' }
                 };
@@ -154,6 +172,7 @@ function customizeHtmlForChart(data, refreshCount) {
         </html>
     `;
 }
+
 
 // Generate and open the chart
 async function generateChart(results, refreshCount) {
@@ -183,34 +202,29 @@ async function refreshChart(page, coins, results) {
     setInterval(async () => {
         refreshCount++;
 
-        // Fetch all prices in one API call
         const assets = await fetchAllPrices();
         if (!assets) {
             console.error("Failed to fetch asset prices.");
             return;
         }
 
-        // Extract prices for the specified coins
         const livePrices = extractCoinPrices(assets, coins);
 
-        // Update movement data with the latest prices and trends
         const updatedResults = results.map(result => ({
             ...result,
-            ...calculateMovementData(result.klines, livePrices[result.coin], result.lastClose) // Pass previous lastClose for trend detection
+            lastClose: livePrices[result.coin], // Update last price
+            ...calculateMovementData(result.klines, livePrices[result.coin]) // Update min, max, totalPercent, and currentPercent
         }));
 
-        // Generate and save the updated chart
         const htmlContent = customizeHtmlForChart(updatedResults, refreshCount);
-        const filePath = path.resolve(__dirname, 'coin_24h_movement_chart.html');
-        fs.writeFileSync(filePath, htmlContent);
+        fs.writeFileSync(path.resolve(__dirname, 'coin_24h_movement_chart.html'), htmlContent);
 
-        await page.reload(); // Reload the page to reflect updates
+        await page.reload();
         console.log(`Chart refreshed (${refreshCount} refreshes so far).`);
     }, 60000); // Refresh every minute
 }
 
-// Main function
-// Main function
+
 async function main() {
     const sysTime = await getSystemTime();
     if (!sysTime) {
@@ -230,8 +244,9 @@ async function main() {
             continue;
         }
 
-        const movementData = calculateMovementData(klines, klines[klines.length - 1][4]); // Use last close price
-        results.push({ coin, klines, ...movementData });
+        const lastClose = Number(klines[klines.length - 1][4]); // Use the last close price from the K-lines
+        const movementData = calculateMovementData(klines, lastClose); // Pass the last close price
+        results.push({ coin, klines, lastClose, ...movementData });
         console.log(`${coin}: Movement data calculated.`);
     }
 
