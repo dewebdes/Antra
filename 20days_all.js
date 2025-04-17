@@ -7,8 +7,8 @@ const bodyParser = require('body-parser');
 const crypto = require('crypto');
 
 // Sensitive credentials
-const ACCESS_ID = "DD053DC012674525AEE34A8C5D093C01"; // Replace with your actual Access ID
-const SECRET_KEY = "6D968D2DA5629E83B42B6F99362B87F4B5E2077104D6803B"; // Replace with your actual Secret Key
+const ACCESS_ID = "xxx"; // Replace with your actual Access ID
+const SECRET_KEY = "xxx"; // Replace with your actual Secret Key
 
 // Axios configuration for main functionality
 const axiosInstance = axios.create({
