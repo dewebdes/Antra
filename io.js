@@ -101,80 +101,74 @@ function calculatePoints(klines, dayLabel) {
 
 // Calculate Fibonacci levels
 function calculateFibonacciLevels(minPrice, maxPrice) {
-    const fibLevels = [];
-    const diff = maxPrice - minPrice;
+    const diff = maxPrice - minPrice; // Price range difference
 
-    // Add all key Fibonacci levels
-    fibLevels.push({ level: '0%', price: maxPrice });
-    fibLevels.push({ level: '23.6%', price: maxPrice - diff * 0.236 });
-    fibLevels.push({ level: '38.2%', price: maxPrice - diff * 0.382 });
-    fibLevels.push({ level: '50%', price: maxPrice - diff * 0.5 });
-    fibLevels.push({ level: '61.8%', price: maxPrice - diff * 0.618 });
-    fibLevels.push({ level: '78.6%', price: maxPrice - diff * 0.786 });
-    fibLevels.push({ level: '100%', price: minPrice });
+    // Calculate key Fibonacci levels
+    const fibLevels = [
+        { level: '0%', price: maxPrice },
+        { level: '23.6%', price: maxPrice - diff * 0.236 },
+        { level: '38.2%', price: maxPrice - diff * 0.382 },
+        { level: '50%', price: maxPrice - diff * 0.5 },
+        { level: '61.8%', price: maxPrice - diff * 0.618 },
+        { level: '78.6%', price: maxPrice - diff * 0.786 },
+        { level: '100%', price: minPrice }
+    ];
 
-    // Ensure each level is correctly labeled and type-marked for table display
-    return fibLevels.map((level) => ({
-        price: Number(level.price),
-        label: level.level,
-        type: 'Fibonacci', // Mark as Fibonacci in "Type" column
-        day: 'Daily' // Always based on today's daily high/low
-    }));
+    return fibLevels; // Return the Fibonacci levels as an array
+}
+
+const formatPrice = (price) => {
+    // Convert price to Number, preserving floating points
+    return Number(price);
+};
+
+function getFloatingPointPrecision(price) {
+    const priceString = price.toString();
+    if (priceString.includes('.')) {
+        return priceString.split('.')[1].length; // Return the number of digits after the decimal
+    }
+    return 0; // No decimal places
 }
 
 // Update HTML without closing browser
-async function updateHtml(coin, currentPrice, dailyPoints, fiveMinPoints, fibonacciLevels) {
+async function updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, fibonacciLevels, minPrice, maxPrice) {
     refreshCounter++; // Increment refresh counter
 
-    // Combine all price points (including Fibonacci levels)
+    // Dynamically adjust min/max prices based on the current price
+    if (currentPrice > maxPrice) maxPrice = currentPrice;
+    if (currentPrice < minPrice) minPrice = currentPrice;
+
+    console.log(`Updated Min Price (5m): ${minPrice}, Max Price (5m): ${maxPrice}`);
+
+    // Combine all price points, formatting Fibonacci levels with the current price's floating precision
     const combinedPoints = [
-        ...dailyPoints.enterPoints,
-        ...dailyPoints.exitPoints,
-        ...fiveMinPoints.enterPoints,
-        ...fiveMinPoints.exitPoints,
-        ...fibonacciLevels // Include refined Fibonacci levels
+        ...dailyPoints.enterPoints.map(point => ({ ...point, sourceType: 'Daily' })),
+        ...fiveMinPoints.enterPoints.map(point => ({ ...point, sourceType: '5m' })),
+        ...dailyPoints.exitPoints.map(point => ({ ...point, sourceType: 'Daily' })),
+        ...fiveMinPoints.exitPoints.map(point => ({ ...point, sourceType: '5m' })),
+        ...fibonacciLevels.map(level => ({
+            price: Number(level.price).toFixed(getFloatingPointPrecision(currentPrice)), // FIXED: Use current price precision
+            label: level.level, // Fibonacci level (e.g., "0%", "23.6%")
+            type: 'Fibonacci',
+            day: 'Fibonacci',
+            sourceType: 'Fibonacci'
+        })),
+        {
+            price: Number(currentPrice),
+            label: 'Current Price',
+            type: 'Current',
+            day: 'Now',
+            sourceType: 'Current'
+        }
     ];
 
-    // Make the price list distinct by filtering out duplicates
-    const uniquePoints = combinedPoints.filter(
-        (point, index, self) => self.findIndex(p => p.price === point.price) === index
+    // Filter points to include only those within the min and max range
+    const filteredPoints = combinedPoints.filter(point =>
+        point.price >= minPrice && point.price <= maxPrice
     );
 
-    // Add the current price as a special point
-    uniquePoints.push({
-        price: currentPrice,
-        label: 'Current Price', // Indicate this is the current price
-        type: 'Current', // Special type
-        day: 'Now' // Special day label
-    });
-
-    // Filter points to include only within ±3% above and ±5% below the current price
-    const filteredPoints = uniquePoints.filter((point) =>
-        Number(point.price) <= currentPrice * 1.03 && Number(point.price) >= currentPrice * 0.95
-    );
-
-    // Reverse sort points by price (highest first)
+    // Sort points by price (highest first)
     const sortedPoints = filteredPoints.sort((a, b) => b.price - a.price);
-
-    // Limit to 5 prices above the current price
-    const aboveCurrent = sortedPoints.filter(point => point.price > currentPrice).slice(0, 5);
-
-    // Limit to 10 prices below the current price (ensure 10 items are displayed at all times)
-    let belowCurrent = sortedPoints.filter(point => point.price <= currentPrice).slice(0, 10);
-    if (belowCurrent.length < 10) {
-        // Add placeholders if fewer than 10 items are available
-        const missingItems = 10 - belowCurrent.length;
-        for (let i = 0; i < missingItems; i++) {
-            belowCurrent.push({
-                price: '-',
-                label: 'No Data', // Indicate placeholder
-                type: 'Placeholder', // Special type for missing data
-                day: '-' // Empty source
-            });
-        }
-    }
-
-    const limitedPoints = [...aboveCurrent, ...belowCurrent];
 
     const htmlContent = `
         <!DOCTYPE html>
@@ -190,15 +184,16 @@ async function updateHtml(coin, currentPrice, dailyPoints, fiveMinPoints, fibona
                 th { background-color: #f4f4f4; }
                 .safe { color: green; font-weight: bold; }
                 .drop { color: red; font-weight: bold; }
-                .enter { background-color: lightblue; }
-                .exit { background-color: orange; }
-                .past-days { background-color: lightgray; }
                 .current-price { background-color: gold; font-weight: bold; color: black; }
+                .daily { background-color: lightgreen; }
+                .five-min { background-color: lightyellow; }
+                .fibonacci { background-color: red; color: white; }
                 .placeholder { background-color: #f4f4f4; color: gray; font-style: italic; }
             </style>
         </head>
         <body>
             <h2>Refresh Count: ${refreshCounter}</h2>
+            <h3>5-Minute Price Range: ${minPrice} - ${maxPrice}</h3>
             <table>
                 <thead>
                     <tr>
@@ -208,65 +203,115 @@ async function updateHtml(coin, currentPrice, dailyPoints, fiveMinPoints, fibona
                     </tr>
                 </thead>
                 <tbody>
-                    ${limitedPoints
-            .map((point) => {
-                const rowClass = point.label === 'Current Price'
-                    ? 'current-price' // Highlight current price row
-                    : point.type === 'Placeholder'
-                        ? 'placeholder' // Highlight placeholders
-                        : point.day === 'Daily' || point.day === '5m'
-                            ? 'past-days' // Highlight past 3 days' points
-                            : ''; // Default for others
-                const typeClass = point.label === 'Enter' ? 'enter' : point.label === 'Exit' ? 'exit' : ''; // Type-specific styling
-                return `
-                                <tr class="${rowClass}">
-                                    <td>$${point.price}</td> <!-- Removed .toFixed(2) -->
-                                    <td class="${typeClass}">${point.label}</td> <!-- Merged column for Type -->
-                                    <td>${point.day}</td> <!-- Source: Daily/5m/Fibonacci/Now -->
-                                </tr>
-                            `;
-            })
-            .join('')}
+                    ${sortedPoints.map(point => {
+        const rowClass =
+            point.sourceType === 'Daily' ? 'daily' :
+                point.sourceType === '5m' ? 'five-min' :
+                    point.sourceType === 'Fibonacci' ? 'fibonacci' :
+                        point.label === 'Current Price' ? 'current-price' : '';
+
+        return `
+                        <tr class="${rowClass}">
+                            <td>$${point.price}</td>
+                            <td>${point.label}</td>
+                            <td>${point.day}</td>
+                        </tr>`;
+    }).join('')}
                 </tbody>
             </table>
         </body>
         </html>
     `;
 
-    await page.setContent(htmlContent); // Update content in the existing browser window
+    try {
+        await page.setContent(htmlContent);
+    } catch (error) {
+        console.error('Error setting page content:', error.message);
+    }
 }
 
 
 
+
+
+
+
+
+function getMaxAndMinPrices(klines) {
+    console.log('Calculating max and min prices...');
+    let maxPrice = -Infinity;
+    let minPrice = Infinity;
+
+    klines.forEach(kline => {
+        const high = parseFloat(kline[2]); // High price
+        const low = parseFloat(kline[3]);  // Low price
+
+        if (high > maxPrice) maxPrice = high;
+        if (low < minPrice) minPrice = low;
+    });
+
+    console.log(`Max price: ${maxPrice}, Min price: ${minPrice}`);
+    return { maxPrice, minPrice };
+}
 
 
 // Main function for real-time execution
 async function main() {
-    const coin = prompt("Enter the coin name (e.g., BTC): ").toUpperCase();
+    const coin = prompt("Enter the coin name (e.g., BTC): ").toUpperCase(); // Prompt user for coin name
+
+    // Fetch initial daily Klines for calculating daily entry and exit points
     const dailyKlines = await fetchKlines(coin, 86400); // Fetch daily Klines
-    const dailyPoints = calculatePoints(dailyKlines, 'Daily'); // Label daily points source
+    const dailyPoints = calculatePoints(dailyKlines, 'Daily'); // Calculate entry/exit points for daily Klines
 
-    const dailyHigh = Math.max(...dailyKlines.map((kline) => Number(kline[2]))); // Highest price
-    const dailyLow = Math.min(...dailyKlines.map((kline) => Number(kline[3]))); // Lowest price
-    const fibonacciLevels = calculateFibonacciLevels(dailyLow, dailyHigh);
+    // Fetch initial 5-minute Klines for past 24 hours
+    let fiveMinKlines = await fetchKlines(coin, 300); // Fetch initial 5-minute Klines
+    let { maxPrice, minPrice } = getMaxAndMinPrices(fiveMinKlines); // Calculate initial min and max prices
 
-    browser = await chromium.launch({
+    // Calculate initial Fibonacci levels based on 5-minute min and max prices
+    let fibonacciLevels = calculateFibonacciLevels(minPrice, maxPrice);
+
+    // Launch browser and create an initial HTML page
+    const browser = await chromium.launch({
         headless: false,
-        executablePath: path.resolve('C:\\Program Files\\Google\\Chrome\\Application', 'chrome.exe') // Fixed path
+        executablePath: path.resolve('C:\\Program Files\\Google\\Chrome\\Application', 'chrome.exe') // Fixed path for Chrome
     });
-    page = await browser.newPage();
 
+    const page = await browser.newPage(); // Create a new page instance
+
+    // Get the initial current price and render the initial HTML content
+    const initialCurrentPrice = await getFinalPrice(coin);
+    console.log('Creating initial HTML content...');
+    await updateHtml(page, coin, initialCurrentPrice, dailyPoints, { enterPoints: [], exitPoints: [] }, fibonacciLevels, minPrice, maxPrice);
+
+    // Set up periodic updates every 1 minute
     setInterval(async () => {
-        const fiveMinKlines = await fetchKlines(coin, 300); // Fetch 5-minute Klines
-        const fiveMinPoints = calculatePoints(fiveMinKlines, '5m'); // Label 5-minute points source
-        const currentPrice = await getFinalPrice(coin);
+        try {
+            // Fetch updated 5-minute Klines and current price
+            fiveMinKlines = await fetchKlines(coin, 300); // Fetch 5-minute Klines for the past 24 hours
+            const fiveMinPoints = calculatePoints(fiveMinKlines, '5m'); // Calculate entry/exit points for 5-minute Klines
+            const currentPrice = await getFinalPrice(coin); // Get the latest current price
 
-        console.log(`New Entry Points: ${fiveMinPoints.enterPoints.length}`);
-        console.log(`New Exit Points: ${fiveMinPoints.exitPoints.length}`);
-        console.log(`Fibonacci Levels: ${fibonacciLevels.length}`);
+            // Recalculate min and max prices dynamically based on 5-minute Klines and current price
+            let { maxPrice: updatedMaxPrice, minPrice: updatedMinPrice } = getMaxAndMinPrices(fiveMinKlines);
+            if (currentPrice > updatedMaxPrice) updatedMaxPrice = currentPrice; // Update max if current price is higher
+            if (currentPrice < updatedMinPrice) updatedMinPrice = currentPrice; // Update min if current price is lower
 
-        await updateHtml(coin, currentPrice, dailyPoints, fiveMinPoints, fibonacciLevels); // Update HTML
-    }, 60000); // Refresh every minute
+            // Recalculate Fibonacci levels dynamically
+            fibonacciLevels = calculateFibonacciLevels(updatedMinPrice, updatedMaxPrice);
+
+            // Debugging logs
+            console.log(`Updated Min Price: ${updatedMinPrice}, Max Price: ${updatedMaxPrice}`);
+            console.log('Updated Fibonacci Levels:', fibonacciLevels);
+
+            // Update the HTML content with refreshed data
+            await updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, fibonacciLevels, updatedMinPrice, updatedMaxPrice);
+        } catch (error) {
+            console.error('Error during periodic updates:', error.message);
+        }
+    }, 60000); // Refresh every 1 minute
 }
+
+
+
 
 main(); // Run the script
