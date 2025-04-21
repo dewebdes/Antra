@@ -18,10 +18,17 @@ let page;    // Persistent page instance
 let skipSound = true; // Ensure no sound is played on the first analysis
 let isPlayingSound = false; // Prevent multiple overlapping sound plays
 
+let levelStates = {}; // Keeps track of each level's state (safe/dropped)
+
 async function getCoinName() {
-    const coinName = prompt('Enter the coin name: ');
+    const coinName = prompt('Enter the coin name (e.g., BTC): ').trim();
+    if (!coinName) {
+        console.error('Error: No coin name entered. Please provide a valid coin name.');
+        process.exit(1); // Exit the script if no input is given
+    }
     return coinName.toUpperCase();
 }
+
 
 async function printStrategies() {
     console.log('Trading Strategies:');
@@ -54,10 +61,69 @@ async function chooseStrategy() {
     return interval;
 }
 
-async function getMinMaxPrices() {
-    const minPrice = parseFloat(prompt('Enter the minimum price: '));
-    const maxPrice = parseFloat(prompt('Enter the maximum price: '));
-    return { minPrice, maxPrice };
+// Replace user input with min and max price calculation
+async function getMinMaxPrices(coin) {
+    console.log(`Fetching min and max prices for the past 24 hours for ${coin}...`);
+    try {
+        const sysTime = await getSystemTime(); // Get the current system time
+        const klines = await fetch5mKlines(coin, sysTime); // Fetch 5-minute K-line data
+        if (!klines) {
+            throw new Error('Failed to fetch K-line data.');
+        }
+        const { minPrice, maxPrice } = getMaxAndMinPrices(klines); // Calculate min and max prices
+        console.log(`Calculated Min Price: ${minPrice}, Max Price: ${maxPrice}`);
+        return { minPrice, maxPrice };
+    } catch (error) {
+        console.error('Error calculating min and max prices:', error.message);
+        process.exit(1); // Exit if unable to fetch or calculate
+    }
+}
+
+// Function to fetch the current system time
+async function getSystemTime() {
+    console.log('Fetching system time...');
+    try {
+        const response = await axiosInstance.get('https://www.coinex.com/res/system/time');
+        console.log('Successfully fetched system time:', response.data.data.current_timestamp);
+        return response.data.data.current_timestamp; // Return the current system timestamp
+    } catch (error) {
+        console.error('Error fetching system time:', error.message);
+        return null;
+    }
+}
+
+// Function to fetch 5-minute K-line data for the past 24 hours
+async function fetch5mKlines(coin, sysTime) {
+    console.log(`Fetching 5-minute K-line data for ${coin}...`);
+    const interval = 300; // 5-minute interval
+    const startTime = sysTime - (24 * 60 * 60); // Last 24 hours
+    const url = `https://www.coinex.com/res/market/kline?market=${coin}USDT&start_time=${startTime}&end_time=${sysTime}&interval=${interval}`;
+    try {
+        const response = await axiosInstance.get(url);
+        console.log(`Successfully fetched 5-minute K-line data for ${coin}.`);
+        return response.data.data; // Return the K-line data
+    } catch (error) {
+        console.error(`Error fetching 5-minute K-lines for ${coin}:`, error.message);
+        return null;
+    }
+}
+
+// Function to calculate the maximum and minimum prices
+function getMaxAndMinPrices(klines) {
+    console.log('Calculating max and min prices...');
+    let maxPrice = -Infinity;
+    let minPrice = Infinity;
+
+    klines.forEach(kline => {
+        const high = parseFloat(kline[2]); // High price
+        const low = parseFloat(kline[3]);  // Low price
+
+        if (high > maxPrice) maxPrice = high;
+        if (low < minPrice) minPrice = low;
+    });
+
+    console.log(`Max price: ${maxPrice}, Min price: ${minPrice}`);
+    return { maxPrice, minPrice };
 }
 
 async function getFinalPrice(coin) {
@@ -142,8 +208,6 @@ async function playAlertSound() {
     }
 }
 
-let levelStates = {}; // Keeps track of each level's state (safe/dropped)
-
 async function analyzeAndLog(coin, interval, minPrice, maxPrice, levels, intervalCount) {
     const closePrice = await getFinalPrice(coin);
 
@@ -225,9 +289,10 @@ async function monitorPrices(coin, interval, minPrice, maxPrice, levels) {
 
 async function main() {
     const coin = await getCoinName();
+    console.log(`Using coin name: ${coin}`); // Debugging log
     await printStrategies();
     const interval = await chooseStrategy();
-    const { minPrice, maxPrice } = await getMinMaxPrices();
+    const { minPrice, maxPrice } = await getMinMaxPrices(coin); // Pass the coin name here
     const fibLevels = calculateFibonacciLevels(minPrice, maxPrice);
     const deepDumpPoints = calculateDeepDumpPoints(minPrice, maxPrice);
     const levels = { fibLevels, deepDumpPoints };
@@ -241,5 +306,6 @@ async function main() {
 
     await monitorPrices(coin, interval, minPrice, maxPrice, levels);
 }
+
 
 main();
