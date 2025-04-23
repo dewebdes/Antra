@@ -54,7 +54,7 @@ function getDecimalPrecision(price) {
     if (priceString.includes('.')) {
         return priceString.split('.')[1].length; // Count decimal places
     }
-    return 0; // No decimal points
+    return 1; // No decimal points
 }
 
 // Fetch 5-minute K-lines for the last 24 hours
