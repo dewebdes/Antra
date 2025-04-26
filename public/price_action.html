@@ -47,7 +47,10 @@
   </head>
   <body>
     <h2>Refresh Count: <span id="refreshCount">0</span></h2>
+
+    <!-- ✅ Restored "Add Coin" Button -->
     <button onclick="openDialog()">Add Coin</button>
+
     <table>
       <thead>
         <tr>
@@ -56,13 +59,15 @@
           <th>Trend</th>
           <th>Last Price</th>
           <th>Movement</th>
-          <!-- ✅ New column for % change -->
+          <th>Remaining %</th>
+          <!-- ✅ New column -->
           <th>Status</th>
         </tr>
       </thead>
       <tbody id="coinTable"></tbody>
     </table>
 
+    <!-- ✅ Restored Add Coin Dialog -->
     <div id="addCoinDialog" class="dialog">
       <h3>Add a New Coin</h3>
       <label for="coinName">Coin Name:</label>
@@ -112,32 +117,44 @@
       function updateUI(refreshCounter, coins, assetPrices) {
         document.getElementById("refreshCount").innerText = refreshCounter;
         const tableBody = document.getElementById("coinTable");
-        tableBody.innerHTML = coins
-          .map(
-            (coin) => `
-                <tr class="${
-                  coin.status === "crossed"
-                    ? "alert"
-                    : coin.status === "strong_movement"
-                    ? "strong-move"
-                    : ""
-                }">
-                    <td style="background-color: ${
-                      coin.status === "strong_movement"
-                        ? "yellow"
-                        : "transparent"
-                    }">${coin.name}</td>
+        tableBody.innerHTML = "";
+
+        // Compute remaining percentage dynamically
+        coins.forEach((coin) => {
+          const currentPrice = assetPrices[coin.name] || null;
+          coin.remainingPercent = currentPrice
+            ? Math.abs(
+                ((coin.limit - currentPrice) / coin.limit) * 100
+              ).toFixed(2)
+            : "N/A";
+        });
+
+        // Sort coins by remaining percentage (ascending order)
+        coins.sort(
+          (a, b) =>
+            parseFloat(a.remainingPercent) - parseFloat(b.remainingPercent)
+        );
+
+        coins.forEach((coin) => {
+          const row = `<tr class="${
+            coin.status === "crossed"
+              ? "alert"
+              : coin.status === "strong_movement"
+              ? "strong-move"
+              : ""
+          }">
+                    <td>${coin.name}</td>
                     <td>${coin.limit}</td>
                     <td>${coin.trend}</td>
                     <td>${assetPrices[coin.name] || "Fetching..."}</td>
                     <td>${
                       coin.status === "strong_movement" ? coin.movement : "-"
-                    }</td> <!-- ✅ Show % change only for sharp moves -->
+                    }</td>
+                    <td>${coin.remainingPercent}%</td> <!-- ✅ Added cell -->
                     <td>${coin.status}</td>
-                </tr>
-            `
-          )
-          .join("");
+                </tr>`;
+          tableBody.innerHTML += row;
+        });
       }
 
       setInterval(() => {
