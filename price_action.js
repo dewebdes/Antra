@@ -62,9 +62,8 @@ async function checkPriceCrossing() {
         if (strongMovement && coin.status !== "crossed" && coin.status !== "strong_movement") {
             console.log(`🔥 STRONG MOVE detected: ${coin.name}`);
 
-            // ✅ Compute the percentage movement
             const movementPercent = ((currentPrice - lastClosePrice) / lastClosePrice) * 100;
-            coin.movement = movementPercent.toFixed(2) + "%"; // Store percentage change
+            coin.movement = movementPercent.toFixed(2) + "%";
 
             coin.status = "strong_movement";
             coin.strongMovementFlag = true;
@@ -86,8 +85,15 @@ async function checkPriceCrossing() {
             console.log(`✅ RECOVERY: ${coin.name} has pulled back below the limit.`);
             coin.status = "safe";
         }
+
+        // Calculate remaining percentage to reach limit
+        coin.remainingPercent = Math.abs(((coin.limit - currentPrice) / coin.limit) * 100).toFixed(2);
     }
+
+    // Sort coins by remaining percent (ascending order)
+    coins.sort((a, b) => parseFloat(a.remainingPercent) - parseFloat(b.remainingPercent));
 }
+
 
 setInterval(checkPriceCrossing, 60000);
 
@@ -115,13 +121,13 @@ app.post('/add-coin', (req, res) => {
 // Handle status requests
 app.get('/status', (req, res) => {
     try {
-        //console.log("📡 Sending status update.");
         res.json({ refreshCounter, coins, assetPrices });
     } catch (error) {
         console.error("❌ Error fetching status:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 
 // Start the server and browser monitoring
 app.listen(3050, () => {
