@@ -25,6 +25,30 @@ async function getSystemTime() {
     }
 }
 
+function calculateAverageDistance(prices) {
+    if (prices.length < 2) return 0; // Avoid division by zero
+
+    let totalDistance = 0;
+    for (let i = 1; i < prices.length; i++) {
+        totalDistance += Math.abs(prices[i] - prices[i - 1]); // Absolute difference
+    }
+
+    return totalDistance / (prices.length - 1); // Average distance
+}
+
+function markLargeDistanceRows(points) {
+    const sortedPrices = points.map(point => point.price).sort((a, b) => b - a);
+    const avgDistance = calculateAverageDistance(sortedPrices); // Get the average price gap
+
+    return points.map(point => ({
+        ...point,
+        largeDistance: sortedPrices.some((price, index) => {
+            const prevPrice = sortedPrices[index - 1];
+            return prevPrice && Math.abs(price - prevPrice) > avgDistance; // Compare with previous price
+        })
+    }));
+}
+
 // Fetch current price
 async function getFinalPrice(coin) {
     try {
@@ -130,7 +154,6 @@ function getFloatingPointPrecision(price) {
     return 0; // No decimal places
 }
 
-// Update HTML without closing browser
 async function updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, fibonacciLevels, minPrice, maxPrice) {
     refreshCounter++; // Increment refresh counter
 
@@ -140,15 +163,15 @@ async function updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, 
 
     console.log(`Updated Min Price (5m): ${minPrice}, Max Price (5m): ${maxPrice}`);
 
-    // Combine all price points, formatting Fibonacci levels with the current price's floating precision
+    // Combine all price points
     const combinedPoints = [
         ...dailyPoints.enterPoints.map(point => ({ ...point, sourceType: 'Daily' })),
         ...fiveMinPoints.enterPoints.map(point => ({ ...point, sourceType: '5m' })),
         ...dailyPoints.exitPoints.map(point => ({ ...point, sourceType: 'Daily' })),
         ...fiveMinPoints.exitPoints.map(point => ({ ...point, sourceType: '5m' })),
         ...fibonacciLevels.map(level => ({
-            price: Number(level.price).toFixed(getFloatingPointPrecision(currentPrice)), // FIXED: Use current price precision
-            label: level.level, // Fibonacci level (e.g., "0%", "23.6%")
+            price: Number(level.price).toFixed(getFloatingPointPrecision(currentPrice)),
+            label: level.level,
             type: 'Fibonacci',
             day: 'Fibonacci',
             sourceType: 'Fibonacci'
@@ -162,14 +185,21 @@ async function updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, 
         }
     ];
 
-    // Filter points to include only those within the min and max range
-    const filteredPoints = combinedPoints.filter(point =>
-        point.price >= minPrice && point.price <= maxPrice
-    );
+    // Filter prices within range
+    const filteredPoints = combinedPoints.filter(point => point.price >= minPrice && point.price <= maxPrice);
 
-    // Sort points by price (highest first)
+    // Sort prices (highest first)
     const sortedPoints = filteredPoints.sort((a, b) => b.price - a.price);
 
+    // Calculate large price gaps AFTER 5m prices are loaded
+    const avgDistance = calculateAverageDistance(sortedPoints.map(point => point.price));
+    const markedPoints = sortedPoints.map((point, index, arr) => {
+        const prevPrice = arr[index - 1]?.price;
+        const isLargeGap = prevPrice && Math.abs(point.price - prevPrice) > avgDistance;
+        return { ...point, largeDistance: isLargeGap };
+    });
+
+    // Generate HTML
     const htmlContent = `
         <!DOCTYPE html>
         <html lang="en">
@@ -178,8 +208,9 @@ async function updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, 
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${coin} Real-Time Analysis</title>
             <style>
-                body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
-                table { width: 80%; border-collapse: collapse; margin: 20px 0; }
+                html { scroll-behavior: smooth; } /* Smooth scrolling */
+                body { font-family: Arial, sans-serif; text-align: center; }
+                table { width: 80%; border-collapse: collapse; margin: 20px auto; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
                 th { background-color: #f4f4f4; }
                 .safe { color: green; font-weight: bold; }
@@ -188,10 +219,12 @@ async function updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, 
                 .daily { background-color: lightgreen; }
                 .five-min { background-color: lightyellow; }
                 .fibonacci { background-color: red; color: white; }
-                .placeholder { background-color: #f4f4f4; color: gray; font-style: italic; }
+                .large-gap { background-color: orange; font-weight: bold; } /* Highlights only extreme gaps */
+                .toolbar { font-weight: bold; padding: 10px; display: block; text-align: center; background: #f4f4f4; border-bottom: 2px solid #ddd; }
             </style>
         </head>
         <body>
+            <a href="#current-price" class="toolbar">🔍 Jump to Current Price</a>
             <h2>Refresh Count: ${refreshCounter}</h2>
             <h3>5-Minute Price Range: ${minPrice} - ${maxPrice}</h3>
             <table>
@@ -203,15 +236,16 @@ async function updateHtml(page, coin, currentPrice, dailyPoints, fiveMinPoints, 
                     </tr>
                 </thead>
                 <tbody>
-                    ${sortedPoints.map(point => {
+                    ${markedPoints.map(point => {
         const rowClass =
-            point.sourceType === 'Daily' ? 'daily' :
-                point.sourceType === '5m' ? 'five-min' :
-                    point.sourceType === 'Fibonacci' ? 'fibonacci' :
-                        point.label === 'Current Price' ? 'current-price' : '';
+            point.largeDistance ? 'large-gap' :
+                point.sourceType === 'Daily' ? 'daily' :
+                    point.sourceType === '5m' ? 'five-min' :
+                        point.sourceType === 'Fibonacci' ? 'fibonacci' :
+                            point.label === 'Current Price' ? 'current-price' : '';
 
         return `
-                        <tr class="${rowClass}">
+                        <tr id="${point.label === 'Current Price' ? 'current-price' : ''}" class="${rowClass}">
                             <td>$${point.price}</td>
                             <td>${point.label}</td>
                             <td>${point.day}</td>
