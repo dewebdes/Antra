@@ -23,10 +23,13 @@
       th {
         background-color: #f4f4f4;
       }
-      .alert {
+      .new-cross {
         background-color: red;
         color: white;
         font-weight: bold;
+      }
+      .old-cross {
+        background-color: #ff9999;
       }
       .strong-move {
         background-color: yellow;
@@ -48,7 +51,6 @@
   <body>
     <h2>Refresh Count: <span id="refreshCount">0</span></h2>
 
-    <!-- ✅ Restored "Add Coin" Button -->
     <button onclick="openDialog()">Add Coin</button>
 
     <table>
@@ -60,14 +62,12 @@
           <th>Last Price</th>
           <th>Movement</th>
           <th>Remaining %</th>
-          <!-- ✅ New column -->
           <th>Status</th>
         </tr>
       </thead>
       <tbody id="coinTable"></tbody>
     </table>
 
-    <!-- ✅ Restored Add Coin Dialog -->
     <div id="addCoinDialog" class="dialog">
       <h3>Add a New Coin</h3>
       <label for="coinName">Coin Name:</label>
@@ -87,6 +87,8 @@
     </div>
 
     <script>
+      let lastCrossedCoin = null; // Track the last crossed coin
+
       function openDialog() {
         document.getElementById("addCoinDialog").style.display = "block";
       }
@@ -119,7 +121,6 @@
         const tableBody = document.getElementById("coinTable");
         tableBody.innerHTML = "";
 
-        // Compute remaining percentage dynamically
         coins.forEach((coin) => {
           const currentPrice = assetPrices[coin.name] || null;
           coin.remainingPercent = currentPrice
@@ -127,32 +128,32 @@
                 ((coin.limit - currentPrice) / coin.limit) * 100
               ).toFixed(2)
             : "N/A";
-        });
 
-        // Sort coins by remaining percentage (ascending order)
-        coins.sort(
-          (a, b) =>
-            parseFloat(a.remainingPercent) - parseFloat(b.remainingPercent)
-        );
+          if (coin.status === "crossed") {
+            lastCrossedCoin = lastCrossedCoin || coin.name; // Keep last crossed coin
+          }
 
-        coins.forEach((coin) => {
-          const row = `<tr class="${
-            coin.status === "crossed"
-              ? "alert"
+          const rowClass =
+            coin.name === lastCrossedCoin
+              ? "new-cross"
+              : coin.status === "crossed"
+              ? "old-cross"
               : coin.status === "strong_movement"
               ? "strong-move"
-              : ""
-          }">
-                    <td>${coin.name}</td>
-                    <td>${coin.limit}</td>
-                    <td>${coin.trend}</td>
-                    <td>${assetPrices[coin.name] || "Fetching..."}</td>
-                    <td>${
-                      coin.status === "strong_movement" ? coin.movement : "-"
-                    }</td>
-                    <td>${coin.remainingPercent}%</td> <!-- ✅ Added cell -->
-                    <td>${coin.status}</td>
-                </tr>`;
+              : "";
+
+          const row = `<tr class="${rowClass}">
+              <td>${coin.name}</td>
+              <td>${coin.limit}</td>
+              <td>${coin.trend}</td>
+              <td>${assetPrices[coin.name] || "Fetching..."}</td>
+              <td>${
+                coin.status === "strong_movement" ? coin.movement : "-"
+              }</td>
+              <td>${coin.remainingPercent}%</td>
+              <td>${coin.status}</td>
+          </tr>`;
+
           tableBody.innerHTML += row;
         });
       }
