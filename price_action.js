@@ -15,6 +15,7 @@ let refreshCounter = 0;
 let assetPrices = {};
 let browser, page;
 let coins = JSON.parse(fs.readFileSync('public/db.json')).coins;
+let lastCrossedCoin = null; // ✅ Track last crossed coin globally
 
 // Fetch asset prices
 async function updateAssetPrices() {
@@ -23,7 +24,7 @@ async function updateAssetPrices() {
         const response = await axios.get('https://www.coinex.com/res/quotes/assets?limit=8000');
         assetPrices = Object.fromEntries(response.data.data.data.map(asset => [asset.asset, parseFloat(asset.price_usd)]));
         console.log("✅ Updated asset prices.");
-        checkPriceCrossing(); // Run analysis immediately after price update
+        checkPriceCrossing();
     } catch (error) {
         console.error("❌ Error fetching asset prices:", error.message);
     }
@@ -31,7 +32,7 @@ async function updateAssetPrices() {
 
 setInterval(updateAssetPrices, 60000);
 
-// Fetch 5m K-lines for coins
+// Simulate K-line data fetch
 async function fetchKlines(coin, interval) {
     return new Promise(resolve => {
         setTimeout(() => resolve([
@@ -40,37 +41,20 @@ async function fetchKlines(coin, interval) {
     });
 }
 
-// Check price behavior & trigger alerts
+// Check price movements
 async function checkPriceCrossing() {
     refreshCounter++;
 
     for (let coin of coins) {
         const currentPrice = assetPrices[coin.name] || null;
         const fiveMinKlines = await fetchKlines(coin.name, 300);
-        const lastClosePrice = parseFloat(fiveMinKlines[fiveMinKlines.length - 1][2]); // Last closing price
+        const lastClosePrice = parseFloat(fiveMinKlines[fiveMinKlines.length - 1][2]);
 
         let { maxPrice, minPrice } = fiveMinKlines.reduce((acc, k) => ({
-            maxPrice: Math.max(acc.maxPrice, Number(k[3])), // Highest Price
-            minPrice: Math.min(acc.minPrice, Number(k[4]))  // Lowest Price
+            maxPrice: Math.max(acc.maxPrice, Number(k[3])),
+            minPrice: Math.min(acc.minPrice, Number(k[4]))
         }), { maxPrice: -Infinity, minPrice: Infinity });
 
-        // Detect strong movement that matches the trend
-        const upwardStrongMove = coin.trend === "up" && currentPrice > maxPrice;
-        const downwardStrongMove = coin.trend === "down" && currentPrice < minPrice;
-        const strongMovement = upwardStrongMove || downwardStrongMove;
-
-        if (strongMovement && coin.status !== "crossed" && coin.status !== "strong_movement") {
-            console.log(`🔥 STRONG MOVE detected: ${coin.name}`);
-
-            const movementPercent = ((currentPrice - lastClosePrice) / lastClosePrice) * 100;
-            coin.movement = movementPercent.toFixed(2) + "%";
-
-            coin.status = "strong_movement";
-            coin.strongMovementFlag = true;
-            player.play('public/alert2.mp3');
-        }
-
-        // Check if price crosses predefined limit
         const crossedLimit =
             (coin.trend === "up" && currentPrice >= coin.limit) ||
             (coin.trend === "down" && currentPrice <= coin.limit);
@@ -78,6 +62,8 @@ async function checkPriceCrossing() {
         if (crossedLimit && coin.status !== "crossed") {
             console.log(`🚨 CROSS ALERT: ${coin.name} has broken the limit!`);
             coin.status = "crossed";
+            coin.crossedTimestamp = Date.now();
+            lastCrossedCoin = coin.name; // ✅ Store most recent crossed coin
             player.play('public/alert2.mp3');
         }
 
@@ -86,23 +72,20 @@ async function checkPriceCrossing() {
             coin.status = "safe";
         }
 
-        // Calculate remaining percentage to reach limit
         coin.remainingPercent = Math.abs(((coin.limit - currentPrice) / coin.limit) * 100).toFixed(2);
     }
 
-    // Sort coins by remaining percent (ascending order)
     coins.sort((a, b) => parseFloat(a.remainingPercent) - parseFloat(b.remainingPercent));
 }
 
-
 setInterval(checkPriceCrossing, 60000);
 
-// Launch Playwright browser & monitoring system
+// Launch Playwright browser
 async function main() {
     console.log("🚀 Launching Playwright browser...");
     browser = await chromium.launch({
         headless: false,
-        executablePath: path.resolve('C:\\Program Files\\Google\\Chrome\\Application', 'chrome.exe') // ✅ Restored Playwright path
+        executablePath: path.resolve('C:\\Program Files\\Google\\Chrome\\Application', 'chrome.exe')
     });
 
     page = await browser.newPage();
@@ -113,7 +96,14 @@ async function main() {
 // Handle adding new coins
 app.post('/add-coin', (req, res) => {
     console.log(`➕ Adding coin: ${req.body.coin}, Limit: ${req.body.limit}, Trend: ${req.body.trend}`);
-    coins.push({ name: req.body.coin, limit: req.body.limit, trend: req.body.trend, status: "safe" });
+    coins.push({
+        name: req.body.coin,
+        limit: req.body.limit,
+        trend: req.body.trend,
+        status: "safe",
+        crossedTimestamp: null
+    });
+
     fs.writeFileSync('public/db.json', JSON.stringify({ coins }, null, 2));
     res.send({ status: "Coin added!" });
 });
@@ -121,17 +111,15 @@ app.post('/add-coin', (req, res) => {
 // Handle status requests
 app.get('/status', (req, res) => {
     try {
-        res.json({ refreshCounter, coins, assetPrices });
+        res.json({ refreshCounter, coins, assetPrices, lastCrossedCoin });
     } catch (error) {
         console.error("❌ Error fetching status:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
-
-// Start the server and browser monitoring
 app.listen(3050, () => {
     console.log("✅ Server running at http://localhost:3050");
-    updateAssetPrices(); // Fetch initial prices and trigger cross-check
-    main(); // ✅ Open browser session with Playwright
+    updateAssetPrices();
+    main();
 });
