@@ -41,6 +41,13 @@ async function fetchKlines(coin, interval) {
     });
 }
 
+var intisplay;
+var canisplay = true;
+function canplay() {
+    clearInterval(intisplay);
+    intisplay = true;
+}
+
 // Check price movements
 async function checkPriceCrossing() {
     refreshCounter++;
@@ -64,7 +71,11 @@ async function checkPriceCrossing() {
             coin.status = "crossed";
             coin.crossedTimestamp = Date.now();
             lastCrossedCoin = coin.name; // ✅ Store most recent crossed coin
-            player.play('public/alert2.mp3');
+            if ((refreshCounter > 2) && (canisplay == true)) {
+                canisplay = false;
+                intisplay = setInterval(canplay, 3000);
+                player.play('public/alert2.mp3');
+            }
         }
 
         if (!crossedLimit && coin.status === "crossed") {

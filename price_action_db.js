@@ -7,7 +7,7 @@ const readline = require('readline');
 const dbFilePath = path.join(__dirname, 'public', 'dbmax.json');
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-// Fetch all assets from CoinEx API (using same proxy settings)
+// Fetch assets from CoinEx API
 async function fetchAssets() {
     try {
         const response = await axios.get('https://www.coinex.com/res/quotes/assets?sort_type=circulation_usd&offset=0&limit=8000', {
@@ -44,7 +44,7 @@ async function getSystemTime() {
     }
 }
 
-// Fetch 5m K-lines from API for past 24 hours
+// Fetch 5m K-lines from API
 async function get5mKlines(coin) {
     const sysTime = await getSystemTime();
     if (!sysTime) return [];
@@ -70,18 +70,21 @@ async function get5mKlines(coin) {
     }
 }
 
-// Ask user for coin selection via prompt
-async function askUserForCoins() {
+// Ask user for coin selection and hours for analysis
+async function askUserForPreferences() {
     return new Promise((resolve) => {
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
         });
 
-        rl.question('Enter coins (comma-separated) or press Enter for all: ', (answer) => {
-            rl.close();
-            const selectedCoins = answer.split(',').map(coin => coin.trim().toUpperCase()).filter(Boolean);
-            resolve(selectedCoins.length ? selectedCoins : null); // Null means all assets
+        rl.question('Enter coins (comma-separated) or press Enter for all: ', (coinInput) => {
+            rl.question('Enter number of hours to analyze: ', (hourInput) => {
+                rl.close();
+                const selectedCoins = coinInput.split(',').map(coin => coin.trim().toUpperCase()).filter(Boolean);
+                const hours = parseInt(hourInput, 10) || 4; // Default to 4 hours if invalid input
+                resolve({ coins: selectedCoins.length ? selectedCoins : null, hours });
+            });
         });
     });
 }
@@ -90,14 +93,13 @@ async function askUserForCoins() {
 async function generateDbFile() {
     console.log('Fetching assets...');
     const assets = await fetchAssets();
-    const userSelectedCoins = await askUserForCoins();
+    const { coins: userSelectedCoins, hours } = await askUserForPreferences();
+    const klineCount = hours * 12; // Calculate required 5m K-lines
     const coinsData = [];
-
-
 
     for (const asset of assets.data) {
         const coin = asset.asset;
-        if (userSelectedCoins && !userSelectedCoins.includes(coin)) continue; // Skip if not in user selection
+        if (userSelectedCoins && !userSelectedCoins.includes(coin)) continue;
 
         const price_usd = parseFloat(asset.price_usd);
         const klinesData = await get5mKlines(coin);
@@ -106,25 +108,18 @@ async function generateDbFile() {
             continue;
         }
 
-        let maxPrice = -Infinity;
-        let minPrice = Infinity;
+        // Extract the latest 'klineCount' entries
+        const recentKlines = klinesData.slice(-klineCount);
+        let maxPrice = Math.max(...recentKlines.map(kline => Number(kline[2])));
 
-        klinesData.forEach(kline => {
-            const high = Number(kline[2]);
-            const low = Number(kline[3]);
-
-            if (high > maxPrice) maxPrice = high;
-            if (low < minPrice) minPrice = low;
-        });
-
-        if (maxPrice === -Infinity || minPrice === Infinity) {
+        if (!maxPrice || maxPrice === -Infinity) {
             console.log(`Skipping ${coin}: No valid price data.`);
             continue;
         }
 
         const remainingPercent = Math.abs(((maxPrice - price_usd) / maxPrice) * 100).toFixed(2);
-        const trend = "up";//price_usd >= minPrice ? "up" : "down";
-        const status = "safe";//price_usd >= maxPrice ? "crossed" : "safe";
+        const trend = "up";// price_usd >= maxPrice ? "up" : "down";
+        const status = price_usd >= maxPrice ? "crossed" : "safe";
         const crossedTimestamp = status === "crossed" ? Date.now() : null;
 
         coinsData.push({
