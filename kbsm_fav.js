@@ -121,15 +121,18 @@ function loadJsonData(filePath) {
     }
 }
 
+
 // Check if a coin exists in JSON files with `status: "pending"`
 function checkPendingStatus(coin) {
     const buyOffers = loadJsonData('./public/buy_offers.json');
     const sellOrders = loadJsonData('./public/sell_orders.json');
+    const priceacts = loadJsonData('./public/db.json');
 
     const inBuyOffers = buyOffers.some(offer => offer.name === coin && offer.status === "pending");
     const inSellOrders = sellOrders.some(order => order.name === coin && order.status === "pending");
+    const inpriceact = priceacts.coins.some(order => order.name === coin);
 
-    return inBuyOffers || inSellOrders; // Return true if the coin exists in either file with `pending` status
+    return inpriceact || inBuyOffers || inSellOrders; // Return true if the coin exists in either file with `pending` status
 }
 
 // Generate HTML Table

@@ -9,10 +9,7 @@ const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 const HTML_FILE_PATH = path.join(__dirname, 'crypto_status.html');
 
 const PROXY_CONFIG = {
-    proxy: {
-        host: '127.0.0.1',
-        port: 8082
-    },
+    proxy: { host: '127.0.0.1', port: 8082 },
     httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
 };
 
@@ -29,13 +26,7 @@ function getIntervalMilliseconds() {
     console.log("5 - 1d");
 
     let choice = prompt("Enter the number of your desired timeframe: ");
-    const intervalMap = {
-        "1": 300,
-        "2": 900,
-        "3": 3600,
-        "4": 14400,
-        "5": 86400
-    };
+    const intervalMap = { "1": 300, "2": 900, "3": 3600, "4": 14400, "5": 86400 };
 
     return intervalMap[choice] || 300;
 }
@@ -86,11 +77,7 @@ function calculateDeviation(pastKlines, todayKlines, coin) {
         return sum + Math.abs((prevKline[2] - prevKline[1]) / prevKline[1]) * 100;
     }, 0) / pastKlines.length;
 
-    return {
-        coin: coin,
-        deviation: todayPercentChange - avgPercentChange,
-        timestamp: latestKline[0]
-    };
+    return { coin: coin, deviation: todayPercentChange - avgPercentChange, timestamp: latestKline[0] };
 }
 
 function calculateCurrentMovement(dailyKlines, coin) {
@@ -110,8 +97,8 @@ async function updateHtmlLog(deviationData, firstRun, page) {
     deviationData.sort((a, b) => b.deviation - a.deviation);
 
     let htmlContent = `<html><head><title>Crypto Status</title>
-        <style>table { width: 100%; border-collapse: collapse; } 
-        th, td { padding: 10px; border: 1px solid black; } 
+        <style>table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid black; }
         .pump { color: green; } .dump { color: red; }</style></head><body>
         <h2>Real-Time Crypto Market Tracking</h2>
         <p>Refresh Count: ${refreshCount}</p>
@@ -119,7 +106,7 @@ async function updateHtmlLog(deviationData, firstRun, page) {
 
     deviationData.forEach((data) => {
         htmlContent += `<tr><td>${data.coin}</td><td>${data.deviation.toFixed(2)}%</td>
-            <td class="${data.currentMovement.includes('Pump') ? 'pump' : 'dump'}">${data.currentMovement}</td></tr>`;
+        <td class="${data.currentMovement.includes('Pump') ? 'pump' : 'dump'}">${data.currentMovement}</td></tr>`;
     });
 
     htmlContent += `</table></body></html>`;
@@ -140,22 +127,25 @@ async function main() {
     await page.goto(`file://${HTML_FILE_PATH}`);
 
     while (true) {
+        deviationData = []; // Reset the list before each refresh
+
         for (const coin of coins) {
             const pastKlines = await getKlines(coin, 7, selectedInterval);
             const todayKlines = await getKlines(coin, 1, selectedInterval);
-            const dailyKlines = await getKlines(coin, 1, 86400); // Always fetch daily movement separately
+            const dailyKlines = await getKlines(coin, 1, 86400); // Daily movement
 
             const deviation = calculateDeviation(pastKlines, todayKlines, coin);
             const currentMovement = calculateCurrentMovement(dailyKlines, coin);
 
             if (deviation && currentMovement) {
                 deviationData.push({ ...deviation, ...currentMovement });
-                await updateHtmlLog(deviationData, firstRun, page);
             }
         }
 
+        await updateHtmlLog(deviationData, firstRun, page);
         firstRun = false;
     }
+
 }
 
 main();

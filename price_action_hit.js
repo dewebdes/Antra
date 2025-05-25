@@ -14,8 +14,8 @@ app.use(express.static('public'));
 let refreshCounter = 0;
 let assetPrices = {};
 let browser, page;
-let coins = JSON.parse(fs.readFileSync('public/db.json')).coins;
-let lastCrossedCoin = null; // ✅ Track last crossed coin globally
+let coins = JSON.parse(fs.readFileSync('public/dbmax.json')).coins;
+let lastCrossedCoin = null;
 
 // Fetch asset prices
 async function updateAssetPrices() {
@@ -32,39 +32,43 @@ async function updateAssetPrices() {
 
 setInterval(updateAssetPrices, 60000);
 
-// Simulate K-line data fetch
-async function fetchKlines(coin, interval) {
-    return new Promise(resolve => {
-        setTimeout(() => resolve([
-            [Date.now() / 1000, "9082", "9228", "9478", "9002", "41.54", "383856"]
-        ]), 1000);
-    });
+var intisplay;
+var canisplay = true;
+function canplay() {
+    clearInterval(intisplay);
+    canisplay = true;
 }
 
-// Check price movements
+// Check price movements and update max-hit count
 async function checkPriceCrossing() {
     refreshCounter++;
 
     for (let coin of coins) {
         const currentPrice = assetPrices[coin.name] || null;
-        const fiveMinKlines = await fetchKlines(coin.name, 300);
-        const lastClosePrice = parseFloat(fiveMinKlines[fiveMinKlines.length - 1][2]);
-
-        let { maxPrice, minPrice } = fiveMinKlines.reduce((acc, k) => ({
-            maxPrice: Math.max(acc.maxPrice, Number(k[3])),
-            minPrice: Math.min(acc.minPrice, Number(k[4]))
-        }), { maxPrice: -Infinity, minPrice: Infinity });
-
         const crossedLimit =
             (coin.trend === "up" && currentPrice >= coin.limit) ||
             (coin.trend === "down" && currentPrice <= coin.limit);
 
-        if (crossedLimit && coin.status !== "crossed") {
-            console.log(`🚨 CROSS ALERT: ${coin.name} has broken the limit!`);
-            coin.status = "crossed";
-            coin.crossedTimestamp = Date.now();
-            lastCrossedCoin = coin.name; // ✅ Store most recent crossed coin
-            player.play('public/alert2.mp3');
+        if (crossedLimit) {
+            if (coin.status !== "crossed") {
+                console.log(`🚨 CROSS ALERT: ${coin.name} has broken the limit!`);
+                coin.status = "crossed";
+                coin.crossedTimestamp = Date.now();
+                coin.newMaxCount = 0;
+            }
+
+            if (currentPrice > (coin.maxReached || coin.limit)) {
+                coin.maxReached = currentPrice;
+                coin.newMaxCount++;
+                console.log(`📈 ${coin.name} hit a new max! Count: ${coin.newMaxCount}`);
+            }
+
+            lastCrossedCoin = coin.name;
+            if (refreshCounter > 2 && canisplay) {
+                canisplay = false;
+                intisplay = setInterval(canplay, 3000);
+                //player.play('public/alert2.mp3');
+            }
         }
 
         if (!crossedLimit && coin.status === "crossed") {
@@ -89,7 +93,7 @@ async function main() {
     });
 
     page = await browser.newPage();
-    await page.goto(`http://localhost:4050/price_action_base.html`);
+    await page.goto(`http://localhost:3050/price_action_hit.html`);
     console.log("📡 Monitoring system is active.");
 }
 
@@ -101,10 +105,11 @@ app.post('/add-coin', (req, res) => {
         limit: req.body.limit,
         trend: req.body.trend,
         status: "safe",
-        crossedTimestamp: null
+        crossedTimestamp: null,
+        newMaxCount: 0
     });
 
-    fs.writeFileSync('public/db.json', JSON.stringify({ coins }, null, 2));
+    fs.writeFileSync('public/dbmax.json', JSON.stringify({ coins }, null, 2));
     res.send({ status: "Coin added!" });
 });
 
@@ -118,8 +123,8 @@ app.get('/status', (req, res) => {
     }
 });
 
-app.listen(4050, () => {
-    console.log("✅ Server running at http://localhost:4050");
+app.listen(3050, () => {
+    console.log("✅ Server running at http://localhost:3050");
     updateAssetPrices();
     main();
 });
