@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trading Alert System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .new-cross {
+        background-color: red;
+        color: white;
+        font-weight: bold;
+      }
+      .old-cross {
+        background-color: #ff9999;
+      }
+      .strong-move {
+        background-color: yellow;
+        font-weight: bold;
+      }
+      .dialog {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border: 2px solid #ddd;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Refresh Count: <span id="refreshCount">0</span></h2>
+
+    <button onclick="openDialog()">Add Coin</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Coin</th>
+          <th>Limit</th>
+          <th>Trend</th>
+          <th>Last Price</th>
+          <th>Movement</th>
+          <th>Remaining %</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="coinTable"></tbody>
+    </table>
+
+    <div id="addCoinDialog" class="dialog">
+      <h3>Add a New Coin</h3>
+      <label for="coinName">Coin Name:</label>
+      <input type="text" id="coinName" required />
+      <br />
+      <label for="priceLimit">Price Limit:</label>
+      <input type="number" id="priceLimit" required />
+      <br />
+      <label for="trend">Trend (up/down):</label>
+      <select id="trend">
+        <option value="up">Up</option>
+        <option value="down">Down</option>
+      </select>
+      <br /><br />
+      <button onclick="submitCoin()">Add Coin</button>
+      <button onclick="closeDialog()">Cancel</button>
+    </div>
+
+    <script>
+      let lastCrossedCoin = null; // Track the last crossed coin
+
+      function openDialog() {
+        document.getElementById("addCoinDialog").style.display = "block";
+      }
+
+      function closeDialog() {
+        document.getElementById("addCoinDialog").style.display = "none";
+      }
+
+      function submitCoin() {
+        const coin = document.getElementById("coinName").value;
+        const limit = document.getElementById("priceLimit").value;
+        const trend = document.getElementById("trend").value;
+
+        if (!coin || !limit) {
+          alert("Please fill out all fields.");
+          return;
+        }
+
+        fetch("/add-coin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ coin, limit, trend }),
+        }).then(() => {
+          closeDialog();
+        });
+      }
+
+      function updateUI(refreshCounter, coins, assetPrices) {
+        document.getElementById("refreshCount").innerText = refreshCounter;
+        const tableBody = document.getElementById("coinTable");
+        tableBody.innerHTML = "";
+
+        coins.forEach((coin) => {
+          const currentPrice = assetPrices[coin.name] || null;
+          coin.remainingPercent = currentPrice
+            ? Math.abs(
+                ((coin.limit - currentPrice) / coin.limit) * 100
+              ).toFixed(2)
+            : "N/A";
+
+          if (coin.status === "crossed") {
+            lastCrossedCoin = lastCrossedCoin || coin.name; // Keep last crossed coin
+          }
+
+          const rowClass =
+            coin.name === lastCrossedCoin
+              ? "new-cross"
+              : coin.status === "crossed"
+              ? "old-cross"
+              : coin.status === "strong_movement"
+              ? "strong-move"
+              : "";
+
+          const row = `<tr class="${rowClass}">
+              <td>${coin.name}</td>
+              <td>${coin.limit}</td>
+              <td>${coin.trend}</td>
+              <td>${assetPrices[coin.name] || "Fetching..."}</td>
+              <td>${
+                coin.status === "strong_movement" ? coin.movement : "-"
+              }</td>
+              <td>${coin.remainingPercent}%</td>
+              <td>${coin.status}</td>
+          </tr>`;
+
+          tableBody.innerHTML += row;
+        });
+      }
+
+      setInterval(() => {
+        fetch("/status")
+          .then((res) => res.json())
+          .then((data) =>
+            updateUI(data.refreshCounter, data.coins, data.assetPrices)
+          )
+          .catch((err) => console.error("Failed to fetch data:", err.message));
+      }, 3000);
+    </script>
+  </body>
+</html>
