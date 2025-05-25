@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trading Alert System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      .new-cross {
+        background-color: red;
+        color: white;
+        font-weight: bold;
+      }
+      .old-cross {
+        background-color: #ff9999;
+      }
+      .strong-move {
+        background-color: yellow;
+        font-weight: bold;
+      }
+      #crossed-coins th {
+        background-color: #ffcc00;
+      }
+      #crossed-coins td {
+        font-weight: bold;
+      }
+      #copyButton {
+        margin: 10px;
+        padding: 8px 12px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Refresh Count: <span id="refreshCount">0</span></h2>
+
+    <!-- Copy Hit Coins Button -->
+    <button id="copyButton" onclick="copyHitCoins()">Copy Hit Coins</button>
+
+    <!-- Crossed Coins Table (Sorted by Max-Hit Count) -->
+    <h3>Crossed Coins (Sorted by Max-Hit Count)</h3>
+    <table id="crossed-coins">
+      <thead>
+        <tr>
+          <th>Coin</th>
+          <th>Times Hit New Max</th>
+          <th>Remaining %</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Main Coins Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Coin</th>
+          <th>Limit</th>
+          <th>Trend</th>
+          <th>Last Price</th>
+          <th>Movement</th>
+          <th>Remaining %</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="coinTable"></tbody>
+    </table>
+
+    <script>
+      function updateUI(refreshCounter, coins, assetPrices) {
+        document.getElementById("refreshCount").innerText = refreshCounter;
+        const tableBody = document.getElementById("coinTable");
+        tableBody.innerHTML = "";
+
+        coins.forEach((coin) => {
+          const currentPrice = assetPrices[coin.name] || null;
+          coin.remainingPercent = currentPrice
+            ? Math.abs(
+                ((coin.limit - currentPrice) / coin.limit) * 100
+              ).toFixed(2)
+            : "N/A";
+
+          const rowClass =
+            coin.status === "crossed"
+              ? "old-cross"
+              : coin.status === "strong_movement"
+              ? "strong-move"
+              : "";
+
+          const row = `<tr class="${rowClass}">
+                    <td>${coin.name}</td>
+                    <td>${coin.limit}</td>
+                    <td>${coin.trend}</td>
+                    <td>${assetPrices[coin.name] || "Fetching..."}</td>
+                    <td>${
+                      coin.status === "strong_movement" ? coin.movement : "-"
+                    }</td>
+                    <td>${coin.remainingPercent}%</td>
+                    <td>${coin.status}</td>
+                </tr>`;
+
+          tableBody.innerHTML += row;
+        });
+      }
+
+      function updateCrossedCoinsTable(coins) {
+        const tableBody = document.querySelector("#crossed-coins tbody");
+        tableBody.innerHTML = "";
+
+        // Sort coins:
+        // (1) Higher max-hit count first (descending)
+        // (2) If same, sort by higher remaining percent (descending)
+        const sortedCoins = coins
+          .filter((c) => c.status === "crossed" && c.newMaxCount > 0)
+          .sort(
+            (a, b) =>
+              b.newMaxCount - a.newMaxCount ||
+              b.remainingPercent - a.remainingPercent
+          );
+
+        if (sortedCoins.length === 0) {
+          tableBody.innerHTML =
+            "<tr><td colspan='3'>No crossed coins yet.</td></tr>";
+        } else {
+          sortedCoins.forEach((coin) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${coin.name}</td><td>${coin.newMaxCount}</td><td>${coin.remainingPercent}%</td>`;
+            tableBody.appendChild(row);
+          });
+        }
+      }
+
+      function copyHitCoins() {
+        const hitCoins = document.querySelectorAll(
+          "#crossed-coins tbody tr td:first-child"
+        );
+        const coinNames = Array.from(hitCoins)
+          .map((coin) => coin.innerText)
+          .join(",");
+        navigator.clipboard
+          .writeText(coinNames)
+          .then(() => {
+            alert("Copied: " + coinNames);
+          })
+          .catch((err) => console.error("Error copying coins:", err));
+      }
+
+      setInterval(() => {
+        fetch("/status")
+          .then((res) => res.json())
+          .then((data) => {
+            updateUI(data.refreshCounter, data.coins, data.assetPrices);
+            updateCrossedCoinsTable(data.coins);
+          })
+          .catch((err) => console.error("Failed to fetch data:", err.message));
+      }, 5000);
+    </script>
+  </body>
+</html>

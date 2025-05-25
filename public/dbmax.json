@@ -1,0 +1,1964 @@
+{
+  "coins": [
+    {
+      "name": "CET",
+      "limit": 0.066759,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.11"
+    },
+    {
+      "name": "BTC",
+      "limit": 109396.55,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.40"
+    },
+    {
+      "name": "ETH",
+      "limit": 2574.99,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.45"
+    },
+    {
+      "name": "XRP",
+      "limit": 2.3602,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.41"
+    },
+    {
+      "name": "BNB",
+      "limit": 676.52,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.09"
+    },
+    {
+      "name": "SOL",
+      "limit": 180.03,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.46"
+    },
+    {
+      "name": "DOGE",
+      "limit": 0.234995,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.82"
+    },
+    {
+      "name": "ADA",
+      "limit": 0.7778,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.43"
+    },
+    {
+      "name": "TRX",
+      "limit": 0.273907,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.97"
+    },
+    {
+      "name": "SUI",
+      "limit": 3.7512,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.82"
+    },
+    {
+      "name": "HYPE",
+      "limit": 35.5148,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.12"
+    },
+    {
+      "name": "LINK",
+      "limit": 16.1734,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.75"
+    },
+    {
+      "name": "AVAX",
+      "limit": 24.3387,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.39"
+    },
+    {
+      "name": "XLM",
+      "limit": 0.294277,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.91"
+    },
+    {
+      "name": "SHIB",
+      "limit": 0.0000147966,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.21"
+    },
+    {
+      "name": "BCH",
+      "limit": 443.47,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.56"
+    },
+    {
+      "name": "HBAR",
+      "limit": 0.198439,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.82"
+    },
+    {
+      "name": "XMR",
+      "limit": 406.57,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.46"
+    },
+    {
+      "name": "TON",
+      "limit": 3.0697,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.76"
+    },
+    {
+      "name": "LTC",
+      "limit": 99.1,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.59"
+    },
+    {
+      "name": "DOT",
+      "limit": 4.7342,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.83"
+    },
+    {
+      "name": "PEPE",
+      "limit": 0.0000149711,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.22"
+    },
+    {
+      "name": "PI",
+      "limit": 0.805,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.21"
+    },
+    {
+      "name": "AAVE",
+      "limit": 275.81,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.09"
+    },
+    {
+      "name": "UNI",
+      "limit": 6.3089,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.28"
+    },
+    {
+      "name": "TAO",
+      "limit": 444.41,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.16"
+    },
+    {
+      "name": "NEAR",
+      "limit": 2.9349,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.36"
+    },
+    {
+      "name": "APT",
+      "limit": 5.5986,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.50"
+    },
+    {
+      "name": "OKB",
+      "limit": 52.48,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.52"
+    },
+    {
+      "name": "KAS",
+      "limit": 0.111577,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.06"
+    },
+    {
+      "name": "ETC",
+      "limit": 19.1122,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.67"
+    },
+    {
+      "name": "ICP",
+      "limit": 5.4512,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.96"
+    },
+    {
+      "name": "TRUMP",
+      "limit": 13.3063,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.64"
+    },
+    {
+      "name": "CRO",
+      "limit": 0.097724,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.54"
+    },
+    {
+      "name": "MNT",
+      "limit": 0.7582,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.60"
+    },
+    {
+      "name": "RENDER",
+      "limit": 4.969,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.98"
+    },
+    {
+      "name": "POL",
+      "limit": 0.242995,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.89"
+    },
+    {
+      "name": "VET",
+      "limit": 0.029199,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.99"
+    },
+    {
+      "name": "NXPC",
+      "limit": 2.2424,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.00"
+    },
+    {
+      "name": "WLD",
+      "limit": 1.5268,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.40"
+    },
+    {
+      "name": "ENA",
+      "limit": 0.3944,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.78"
+    },
+    {
+      "name": "FIL",
+      "limit": 2.9606,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.24"
+    },
+    {
+      "name": "FET",
+      "limit": 0.9129,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.39"
+    },
+    {
+      "name": "ALGO",
+      "limit": 0.233014,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.33"
+    },
+    {
+      "name": "ARB",
+      "limit": 0.4106,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.07"
+    },
+    {
+      "name": "ATOM",
+      "limit": 5.0473,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.73"
+    },
+    {
+      "name": "BONK",
+      "limit": 0.0000232128,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.17"
+    },
+    {
+      "name": "TIA",
+      "limit": 2.7579,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.45"
+    },
+    {
+      "name": "FARTCOIN",
+      "limit": 1.5418,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.45"
+    },
+    {
+      "name": "STX",
+      "limit": 0.9516,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.41"
+    },
+    {
+      "name": "S",
+      "limit": 0.5007,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.59"
+    },
+    {
+      "name": "VIRTUAL",
+      "limit": 2.0941,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.41"
+    },
+    {
+      "name": "INJ",
+      "limit": 13.8395,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.08"
+    },
+    {
+      "name": "ONDO",
+      "limit": 0.9787,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.23"
+    },
+    {
+      "name": "OP",
+      "limit": 0.7883,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.63"
+    },
+    {
+      "name": "SEI",
+      "limit": 0.236785,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.60"
+    },
+    {
+      "name": "IP",
+      "limit": 4.4827,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.50"
+    },
+    {
+      "name": "IMX",
+      "limit": 0.6755,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.69"
+    },
+    {
+      "name": "QNT",
+      "limit": 98.19,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.47"
+    },
+    {
+      "name": "EOS",
+      "limit": 0.7549,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.21"
+    },
+    {
+      "name": "WIF",
+      "limit": 1.1951,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.75"
+    },
+    {
+      "name": "GRT",
+      "limit": 0.11432,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.82"
+    },
+    {
+      "name": "MKR",
+      "limit": 1675.63,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.54"
+    },
+    {
+      "name": "CRV",
+      "limit": 0.8319,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.07"
+    },
+    {
+      "name": "FLOKI",
+      "limit": 0.00010613,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.69"
+    },
+    {
+      "name": "JUP",
+      "limit": 0.592,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.12"
+    },
+    {
+      "name": "RAY",
+      "limit": 3.3319,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.38"
+    },
+    {
+      "name": "JASMY",
+      "limit": 0.01832,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.34"
+    },
+    {
+      "name": "THETA",
+      "limit": 0.9165,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.14"
+    },
+    {
+      "name": "GALA",
+      "limit": 0.019923,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.90"
+    },
+    {
+      "name": "PENGU",
+      "limit": 0.013744,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.80"
+    },
+    {
+      "name": "XAUT",
+      "limit": 3369.98,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.39"
+    },
+    {
+      "name": "CORE",
+      "limit": 0.829,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.47"
+    },
+    {
+      "name": "ENS",
+      "limit": 22.7894,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.95"
+    },
+    {
+      "name": "PAXG",
+      "limit": 3370,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.59"
+    },
+    {
+      "name": "ZEC",
+      "limit": 48.2,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.29"
+    },
+    {
+      "name": "IOTA",
+      "limit": 0.219404,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.51"
+    },
+    {
+      "name": "SAND",
+      "limit": 0.3235,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.17"
+    },
+    {
+      "name": "LDO",
+      "limit": 0.9023,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.10"
+    },
+    {
+      "name": "HNT",
+      "limit": 4.2342,
+      "trend": "up",
+      "status": "crossed",
+      "crossedTimestamp": 1748111056521,
+      "remainingPercent": "0.02"
+    },
+    {
+      "name": "PYTH",
+      "limit": 0.143591,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.05"
+    },
+    {
+      "name": "CAKE",
+      "limit": 2.3863,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.36"
+    },
+    {
+      "name": "BSV",
+      "limit": 37.77,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.14"
+    },
+    {
+      "name": "PENDLE",
+      "limit": 4.497,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.49"
+    },
+    {
+      "name": "BTT",
+      "limit": 7.475e-7,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.68"
+    },
+    {
+      "name": "KAIA",
+      "limit": 0.119013,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.72"
+    },
+    {
+      "name": "RUNE",
+      "limit": 2.0282,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.53"
+    },
+    {
+      "name": "BRETT",
+      "limit": 0.069746,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.07"
+    },
+    {
+      "name": "FLOW",
+      "limit": 0.4251,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.46"
+    },
+    {
+      "name": "XCN",
+      "limit": 0.019214,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.13"
+    },
+    {
+      "name": "MANA",
+      "limit": 0.327571,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.30"
+    },
+    {
+      "name": "XTZ",
+      "limit": 0.64,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.16"
+    },
+    {
+      "name": "AIOZ",
+      "limit": 0.449,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.65"
+    },
+    {
+      "name": "DOG",
+      "limit": 0.00531975,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.47"
+    },
+    {
+      "name": "EGLD",
+      "limit": 18.7466,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.52"
+    },
+    {
+      "name": "RSR",
+      "limit": 0.009044,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.51"
+    },
+    {
+      "name": "DYDX",
+      "limit": 0.667,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.03"
+    },
+    {
+      "name": "APE",
+      "limit": 0.6697,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.43"
+    },
+    {
+      "name": "STRK",
+      "limit": 0.165909,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.89"
+    },
+    {
+      "name": "POPCAT",
+      "limit": 0.553281,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "10.35"
+    },
+    {
+      "name": "SUPER",
+      "limit": 0.8369,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.75"
+    },
+    {
+      "name": "AR",
+      "limit": 7.5507,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.52"
+    },
+    {
+      "name": "MOVE",
+      "limit": 0.1931,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.95"
+    },
+    {
+      "name": "KAITO",
+      "limit": 1.9916,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.94"
+    },
+    {
+      "name": "MOG",
+      "limit": 0.0000012746,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.01"
+    },
+    {
+      "name": "NEO",
+      "limit": 6.7211,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.22"
+    },
+    {
+      "name": "AXS",
+      "limit": 2.9743,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.60"
+    },
+    {
+      "name": "ATH",
+      "limit": 0.052489,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.26"
+    },
+    {
+      "name": "W",
+      "limit": 0.104581,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.46"
+    },
+    {
+      "name": "DEEP",
+      "limit": 0.187028,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.33"
+    },
+    {
+      "name": "KAVA",
+      "limit": 0.4221,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.42"
+    },
+    {
+      "name": "CFX",
+      "limit": 0.094468,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.02"
+    },
+    {
+      "name": "XEC",
+      "limit": 0.000023218,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.49"
+    },
+    {
+      "name": "RON",
+      "limit": 0.7387,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "8.64"
+    },
+    {
+      "name": "BDX",
+      "limit": 0.063323,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.47"
+    },
+    {
+      "name": "CHZ",
+      "limit": 0.045296,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.13"
+    },
+    {
+      "name": "SOON",
+      "limit": 0.5108,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "17.68"
+    },
+    {
+      "name": "AKT",
+      "limit": 1.6001,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.85"
+    },
+    {
+      "name": "FTT",
+      "limit": 1.1883,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.63"
+    },
+    {
+      "name": "COMP",
+      "limit": 43.21,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.90"
+    },
+    {
+      "name": "MEW",
+      "limit": 0.00419697,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.61"
+    },
+    {
+      "name": "PNUT",
+      "limit": 0.362363,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.86"
+    },
+    {
+      "name": "TURBO",
+      "limit": 0.005596,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.90"
+    },
+    {
+      "name": "LUNC",
+      "limit": 0.00006363,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.78"
+    },
+    {
+      "name": "OM",
+      "limit": 0.4149,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.52"
+    },
+    {
+      "name": "PLUME",
+      "limit": 0.168924,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.16"
+    },
+    {
+      "name": "1INCH",
+      "limit": 0.232129,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.72"
+    },
+    {
+      "name": "MINA",
+      "limit": 0.2631,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.11"
+    },
+    {
+      "name": "KSM",
+      "limit": 19.0441,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.75"
+    },
+    {
+      "name": "SAFE",
+      "limit": 0.5463,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.19"
+    },
+    {
+      "name": "ETHFI",
+      "limit": 1.2968,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.34"
+    },
+    {
+      "name": "DASH",
+      "limit": 24.2801,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.85"
+    },
+    {
+      "name": "TOSHI",
+      "limit": 0.0007254,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.90"
+    },
+    {
+      "name": "NOT",
+      "limit": 0.00285072,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.85"
+    },
+    {
+      "name": "MOODENG",
+      "limit": 0.281352,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.52"
+    },
+    {
+      "name": "SNX",
+      "limit": 0.8102,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.59"
+    },
+    {
+      "name": "GLM",
+      "limit": 0.2707,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.44"
+    },
+    {
+      "name": "BABYDOGE",
+      "limit": 1.736e-9,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.53"
+    },
+    {
+      "name": "ZIL",
+      "limit": 0.01315,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.55"
+    },
+    {
+      "name": "BLUR",
+      "limit": 0.106691,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.53"
+    },
+    {
+      "name": "ZK",
+      "limit": 0.066331,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.20"
+    },
+    {
+      "name": "ZRO",
+      "limit": 2.8149,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.31"
+    },
+    {
+      "name": "LPT",
+      "limit": 5.6346,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.70"
+    },
+    {
+      "name": "ORDI",
+      "limit": 11.0447,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.51"
+    },
+    {
+      "name": "ZRX",
+      "limit": 0.274373,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.10"
+    },
+    {
+      "name": "NEIROCTO",
+      "limit": 0.00056973,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "7.04"
+    },
+    {
+      "name": "BAT",
+      "limit": 0.151749,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.20"
+    },
+    {
+      "name": "CELO",
+      "limit": 0.397,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.66"
+    },
+    {
+      "name": "ONE",
+      "limit": 0.014975,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.51"
+    },
+    {
+      "name": "DEGEN",
+      "limit": 0.005751,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.87"
+    },
+    {
+      "name": "SUSHI",
+      "limit": 0.7615,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.40"
+    },
+    {
+      "name": "HOT",
+      "limit": 0.00117816,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.86"
+    },
+    {
+      "name": "BABY",
+      "limit": 0.083031,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.45"
+    },
+    {
+      "name": "IOTX",
+      "limit": 0.020909,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.09"
+    },
+    {
+      "name": "LAUNCHCOIN",
+      "limit": 0.192424,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.87"
+    },
+    {
+      "name": "YFI",
+      "limit": 5746.03,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.87"
+    },
+    {
+      "name": "MELANIA",
+      "limit": 0.3625,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.17"
+    },
+    {
+      "name": "SYRUP",
+      "limit": 0.43,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.19"
+    },
+    {
+      "name": "RVN",
+      "limit": 0.012466,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.55"
+    },
+    {
+      "name": "MASK",
+      "limit": 2.2055,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "16.63"
+    },
+    {
+      "name": "ROAM",
+      "limit": 0.2159,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "17.00"
+    },
+    {
+      "name": "XCH",
+      "limit": 12.8286,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.29"
+    },
+    {
+      "name": "KDA",
+      "limit": 0.5706,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.68"
+    },
+    {
+      "name": "AIXBT",
+      "limit": 0.189878,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.82"
+    },
+    {
+      "name": "ENJ",
+      "limit": 0.090811,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.16"
+    },
+    {
+      "name": "IO",
+      "limit": 1.0515,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.43"
+    },
+    {
+      "name": "BOME",
+      "limit": 0.00243073,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.07"
+    },
+    {
+      "name": "GMX",
+      "limit": 15.7924,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.92"
+    },
+    {
+      "name": "ZEN",
+      "limit": 9.9459,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.26"
+    },
+    {
+      "name": "GMT",
+      "limit": 0.060655,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.77"
+    },
+    {
+      "name": "WAVES",
+      "limit": 1.2929,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.64"
+    },
+    {
+      "name": "SKL",
+      "limit": 0.025005,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.52"
+    },
+    {
+      "name": "LRC",
+      "limit": 0.11036,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.69"
+    },
+    {
+      "name": "WEMIX",
+      "limit": 0.3929,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.23"
+    },
+    {
+      "name": "ONT",
+      "limit": 0.15372,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.48"
+    },
+    {
+      "name": "METIS",
+      "limit": 20.7211,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.92"
+    },
+    {
+      "name": "USUAL",
+      "limit": 0.140451,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.06"
+    },
+    {
+      "name": "CFG",
+      "limit": 0.247905,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "9.40"
+    },
+    {
+      "name": "STORJ",
+      "limit": 0.3066,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.23"
+    },
+    {
+      "name": "PRIME",
+      "limit": 3.5149,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.24"
+    },
+    {
+      "name": "WCT",
+      "limit": 0.6735,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.53"
+    },
+    {
+      "name": "SONIC",
+      "limit": 0.3207,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.28"
+    },
+    {
+      "name": "WAXP",
+      "limit": 0.024664,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.53"
+    },
+    {
+      "name": "DYM",
+      "limit": 0.3795,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.14"
+    },
+    {
+      "name": "FLUX",
+      "limit": 0.2899,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "7.28"
+    },
+    {
+      "name": "XEM",
+      "limit": 0.012149,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "7.07"
+    },
+    {
+      "name": "IOST",
+      "limit": 0.00404,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.92"
+    },
+    {
+      "name": "DOGS",
+      "limit": 0.00019557,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.93"
+    },
+    {
+      "name": "GRIFFAIN",
+      "limit": 0.098103,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.36"
+    },
+    {
+      "name": "BB",
+      "limit": 0.170077,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.94"
+    },
+    {
+      "name": "CHR",
+      "limit": 0.104124,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.95"
+    },
+    {
+      "name": "COOKIE",
+      "limit": 0.313036,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.80"
+    },
+    {
+      "name": "CELR",
+      "limit": 0.010357,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.83"
+    },
+    {
+      "name": "AUCTION",
+      "limit": 12.1061,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.45"
+    },
+    {
+      "name": "COLLAT",
+      "limit": 0.065685,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.79"
+    },
+    {
+      "name": "X",
+      "limit": 0.00008769,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.92"
+    },
+    {
+      "name": "ARC",
+      "limit": 0.063113,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.98"
+    },
+    {
+      "name": "MAGIC",
+      "limit": 0.1705,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.88"
+    },
+    {
+      "name": "ANYONE",
+      "limit": 0.596,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.53"
+    },
+    {
+      "name": "NOBODY",
+      "limit": 0.059046,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.87"
+    },
+    {
+      "name": "DOGINME",
+      "limit": 0.00083199,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.27"
+    },
+    {
+      "name": "INIT",
+      "limit": 1.1458,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "12.10"
+    },
+    {
+      "name": "TORN",
+      "limit": 9.752,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.30"
+    },
+    {
+      "name": "VINE",
+      "limit": 0.04779,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.13"
+    },
+    {
+      "name": "SYN",
+      "limit": 0.230974,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.37"
+    },
+    {
+      "name": "MERL",
+      "limit": 0.142537,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "17.08"
+    },
+    {
+      "name": "DODO",
+      "limit": 0.054,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.29"
+    },
+    {
+      "name": "WOJAK",
+      "limit": 0.00054124,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.55"
+    },
+    {
+      "name": "PHB",
+      "limit": 0.6404,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.76"
+    },
+    {
+      "name": "SAGA",
+      "limit": 0.4289,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "13.66"
+    },
+    {
+      "name": "HAEDAL",
+      "limit": 0.166152,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.95"
+    },
+    {
+      "name": "JELLYJELLY",
+      "limit": 0.03268,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.29"
+    },
+    {
+      "name": "STO",
+      "limit": 0.132024,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.40"
+    },
+    {
+      "name": "OMG",
+      "limit": 0.204836,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.90"
+    },
+    {
+      "name": "OMNI",
+      "limit": 2.8983,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.25"
+    },
+    {
+      "name": "PIPPIN",
+      "limit": 0.029009,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.68"
+    },
+    {
+      "name": "AIDOGE",
+      "limit": 1.6226e-10,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.63"
+    },
+    {
+      "name": "FHE",
+      "limit": 0.10717,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.09"
+    },
+    {
+      "name": "ALPACA",
+      "limit": 0.183185,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "6.82"
+    },
+    {
+      "name": "RATS",
+      "limit": 0.0000241083,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.94"
+    },
+    {
+      "name": "GORK",
+      "limit": 0.022353,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.36"
+    },
+    {
+      "name": "SHADOW",
+      "limit": 52.88,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "10.14"
+    },
+    {
+      "name": "MEMEFI",
+      "limit": 0.001769,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.95"
+    },
+    {
+      "name": "REZ",
+      "limit": 0.015172,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.63"
+    },
+    {
+      "name": "HIFI",
+      "limit": 0.1195,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.68"
+    },
+    {
+      "name": "MANEKI",
+      "limit": 0.00188015,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.91"
+    },
+    {
+      "name": "LEASH",
+      "limit": 145.02,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "8.06"
+    },
+    {
+      "name": "BROCCOLIF3B",
+      "limit": 0.014444,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.12"
+    },
+    {
+      "name": "SPS",
+      "limit": 0.010101,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "1.88"
+    },
+    {
+      "name": "RFC",
+      "limit": 0.014073,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.49"
+    },
+    {
+      "name": "GRIFT",
+      "limit": 0.015092,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "9.99"
+    },
+    {
+      "name": "REN",
+      "limit": 0.012519,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.98"
+    },
+    {
+      "name": "PWEASE",
+      "limit": 0.012965,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "21.64"
+    },
+    {
+      "name": "1DOLLAR",
+      "limit": 0.01295,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "27.36"
+    },
+    {
+      "name": "GIZMO",
+      "limit": 0.00882287,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "0.28"
+    },
+    {
+      "name": "LUCE",
+      "limit": 0.009164,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "4.13"
+    },
+    {
+      "name": "NEON",
+      "limit": 0.14326,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.56"
+    },
+    {
+      "name": "SWCH",
+      "limit": 0.37,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "2.81"
+    },
+    {
+      "name": "VVAIFU",
+      "limit": 0.005474,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "10.98"
+    },
+    {
+      "name": "XSAT",
+      "limit": 6.4108,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "13.17"
+    },
+    {
+      "name": "BLUBAVAX",
+      "limit": 0.004079,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "13.26"
+    },
+    {
+      "name": "NRG",
+      "limit": 0.034,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.58"
+    },
+    {
+      "name": "KASPER",
+      "limit": 0.00011108,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "3.58"
+    },
+    {
+      "name": "LEMON",
+      "limit": 0.000551,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "9.98"
+    },
+    {
+      "name": "TOMI",
+      "limit": 0.002271,
+      "trend": "up",
+      "status": "safe",
+      "crossedTimestamp": null,
+      "remainingPercent": "5.20"
+    }
+  ]
+}
