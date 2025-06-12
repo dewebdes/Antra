@@ -1,6 +1,7 @@
 const { chromium } = require('playwright');
 const axios = require('axios');
 const https = require('https');
+const { spawnSync } = require('child_process');
 
 const axiosInstance = axios.create({
   proxy: { host: '127.0.0.1', port: 8082 },
@@ -11,6 +12,10 @@ let browser, page;
 let refreshCount = 0;
 let requestCount = 0;
 let tableData = [];
+
+process.stdin.resume();
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', handleConsoleInput);
 
 (async () => {
   browser = await chromium.launch({
@@ -32,7 +37,7 @@ let tableData = [];
       const result = await scanCoin(symbol);
       requestCount++;
 
-      if (!isNaN(parseFloat(result.delta))) {
+      if (!isNaN(Number(result.delta))) {
         updateRow(result);
         console.log(`📊 [${i + 1}/${coins.length}] ${symbol} → Δ: ${result.delta}% | VolDev: ${result.volDeviation}%`);
       } else {
@@ -60,7 +65,7 @@ async function getCoinsList() {
 async function scanCoin(symbol) {
   const now = Math.floor(Date.now() / 1000);
   const start = 1000000000;
-  const interval = 300; // 5 minutes
+  const interval = 300;
 
   try {
     const res = await axiosInstance.get(
@@ -79,21 +84,21 @@ async function scanCoin(symbol) {
     if (!data || data.length < 288) throw new Error('Not enough candles for 24h');
 
     const total = data.length;
-    const todayCandles = data.slice(-288); // last 24h of 5m candles
-    const historyCandles = data.slice(0, total - 288); // everything before that
+    const todayCandles = data.slice(-288);
+    const historyCandles = data.slice(0, total - 288);
 
-    const todayHigh = Math.max(...todayCandles.map(c => parseFloat(c[3])));
-    const historicalHigh = Math.max(...historyCandles.map(c => parseFloat(c[3])));
+    const todayHigh = Math.max(...todayCandles.map(c => Number(c[3])));
+    const historicalHigh = Math.max(...historyCandles.map(c => Number(c[3])));
     const delta = (((todayHigh - historicalHigh) / historicalHigh) * 100).toFixed(2);
 
-    const allQuotes = data.map(c => parseFloat(c[6]));
+    const allQuotes = data.map(c => Number(c[6]));
     const avgVol = allQuotes.reduce((a, b) => a + b, 0) / allQuotes.length;
 
-    const todayQuotes = todayCandles.map(c => parseFloat(c[6]));
+    const todayQuotes = todayCandles.map(c => Number(c[6]));
     const todayVolAvg = todayQuotes.reduce((a, b) => a + b, 0) / todayQuotes.length;
 
     const volDeviation = (((todayVolAvg - avgVol) / avgVol) * 100).toFixed(2);
-    const close = parseFloat(data[data.length - 1][2]);
+    const close = Number(data[data.length - 1][2]);
 
     return {
       symbol,
@@ -117,6 +122,42 @@ async function scanCoin(symbol) {
   }
 }
 
+function handleConsoleInput(input) {
+  const trimmed = input.trim();
+  const match = trimmed.match(/^json\((\d+)\)$/i);
+  if (!match) return;
+
+  const count = parseInt(match[1]);
+  const clean = tableData.filter(d => !isNaN(Number(d.delta)));
+  const sorted = [...clean].sort((a, b) => Number(b.delta) - Number(a.delta));
+  const top = sorted.slice(0, count).map(row => ({
+    symbol: row.symbol,
+    close: row.close,
+    todayHigh: row.todayHigh,
+    high: row.high,
+    delta: row.delta,
+    volDeviation: row.volDeviation,
+    time: row.time
+  }));
+
+  const output = {
+    analysis_type: "breakout_dependency_analysis",
+    description: "Copilot should analyze which pumps are independent or dependent by checking external context and signal quality.",
+    data: top
+  };
+
+  const jsonString = JSON.stringify(output, null, 2);
+  console.log(`\n📦 Top ${count} breakout coins JSON:\n`);
+  console.log(jsonString);
+
+  try {
+    const copyCmd = process.platform === 'win32' ? 'clip' : 'pbcopy';
+    require('child_process').spawnSync(copyCmd, [], { input: jsonString });
+    console.log('\n✅ JSON copied to clipboard. Paste it to Copilot when ready.');
+  } catch (e) {
+    console.warn('⚠️ Clipboard copy failed:', e.message);
+  }
+}
 
 
 function updateRow(result) {
@@ -126,8 +167,8 @@ function updateRow(result) {
 }
 
 async function updateHTML() {
-  const clean = tableData.filter(d => !isNaN(parseFloat(d.delta)));
-  const sorted = [...clean].sort((a, b) => parseFloat(b.delta) - parseFloat(a.delta));
+  const clean = tableData.filter(d => !isNaN(Number(d.delta)));
+  const sorted = [...clean].sort((a, b) => Number(b.delta) - Number(a.delta));
   await page.setContent(generateHTML(sorted));
 }
 
@@ -157,8 +198,8 @@ function generateHTML(data) {
             <td>${d.close}</td>
             <td>${d.todayHigh}</td>
             <td>${d.high}</td>
-            <td style="color:${parseFloat(d.delta) > 0 ? '#66ff66' : '#ff6666'};">${d.delta}</td>
-            <td style="color:${parseFloat(d.volDeviation) > 0 ? '#66ccff' : '#aaa'};">${d.volDeviation}</td>
+            <td style="color:${Number(d.delta) > 0 ? '#66ff66' : '#ff6666'};">${d.delta}</td>
+            <td style="color:${Number(d.volDeviation) > 0 ? '#66ccff' : '#aaa'};">${d.volDeviation}</td>
             <td>${d.time}</td>
           </tr>
         `).join('')}
