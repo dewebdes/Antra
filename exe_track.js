@@ -90,6 +90,19 @@ function prepareHTML(buyBars, sellBars, coin) {
     }
 
     function render() {
+      const allPrices = [...buys.map(d => d.price), ...sells.map(d => d.price)];
+      const allVolumes = [...buys.map(d => d.volume_usd), ...sells.map(d => d.volume_usd)];
+
+      const minPrice = Math.min(...allPrices);
+      const maxPrice = Math.max(...allPrices);
+      const minVol = Math.min(...allVolumes);
+      const maxVol = Math.max(...allVolumes) || 1;
+
+      for (const b of buys)
+        b.fill = b.price * (b.volume_usd / maxVol);
+      for (const s of sells)
+        s.fill = s.price * (s.volume_usd / maxVol);
+
       const layout = {
         title: "${coin} Volume Fill Bars (USD)",
         grid: { rows: 2, columns: 1, pattern: "independent" },
@@ -98,16 +111,20 @@ function prepareHTML(buyBars, sellBars, coin) {
           title: "Buy Time",
           type: "category",
           categoryorder: "array",
-          categoryarray: buys.map(d => d.time)
+          categoryarray: buys.map(d => d.time),
+          tickfont: { size: 1, color: "transparent" },
+          tickvals: []
         },
-        yaxis: { title: "Buy Price" },
+        yaxis: { title: "Buy Price", range: [0, maxPrice] },
         xaxis2: {
           title: "Sell Time",
           type: "category",
           categoryorder: "array",
-          categoryarray: sells.map(d => d.time)
+          categoryarray: sells.map(d => d.time),
+          tickfont: { size: 1, color: "transparent" },
+          tickvals: []
         },
-        yaxis2: { title: "Sell Price" }
+        yaxis2: { title: "Sell Price", range: [0, maxPrice] }
       };
 
       const buyFrame = {
@@ -116,7 +133,7 @@ function prepareHTML(buyBars, sellBars, coin) {
         y: buys.map(d => d.price),
         base: 0,
         offsetgroup: "buy",
-        marker: { color: "rgba(0,0,0,0)", line: { color: "green", width: 2 } },
+        marker: { color: "rgba(0,0,0,0)", line: { color: "white", width: 0.1 } },
         text: buys.map(d => "▲ " + formatUSD(d.volume_usd)),
         name: "Buy Frame",
         xaxis: "x",
@@ -143,7 +160,7 @@ function prepareHTML(buyBars, sellBars, coin) {
         y: sells.map(d => d.price),
         base: 0,
         offsetgroup: "sell",
-        marker: { color: "rgba(0,0,0,0)", line: { color: "red", width: 2 } },
+        marker: { color: "rgba(0,0,0,0)", line: { color: "white", width: 0.1 } },
         text: sells.map(d => "▼ " + formatUSD(d.volume_usd)),
         name: "Sell Frame",
         xaxis: "x2",
@@ -157,7 +174,7 @@ function prepareHTML(buyBars, sellBars, coin) {
         y: sells.map(d => d.fill),
         base: 0,
         offsetgroup: "sell",
-        marker: { color: "red", opacity: 0.6 },
+        marker: { color: "blue", opacity: 0.6 },
         name: "Sell Fill",
         xaxis: "x2",
         yaxis: "y2",
@@ -165,35 +182,38 @@ function prepareHTML(buyBars, sellBars, coin) {
       };
 
       Plotly.newPlot("chart", [buyFrame, buyFill, sellFrame, sellFill], layout);
+
+      document.getElementById("status").textContent =
+        "✅ " + updates + " trades | " +
+        "Price: " + minPrice.toFixed(8) + " → " + maxPrice.toFixed(8) + " | " +
+        "Vol: " + formatUSD(minVol) + " → " + formatUSD(maxVol) + " | " +
+        new Date().toLocaleTimeString();
     }
 
     window.receiveNewData = function (rows) {
       for (const r of rows) {
         const arr = r.side === "buy" ? buys : sells;
-        const idx = arr.findIndex(t => t.time === r.readable_time);
+        const idx = arr.findIndex(t => t.id === r.id);
         const usd = r.price * r.amount;
 
         if (idx >= 0) {
           arr[idx].volume_usd += usd;
-          arr[idx].price = Math.max(arr[idx].price, r.price);
+          // Do NOT update price anymore — keep first trade's price
+          // arr[idx].price = Math.max(arr[idx].price, r.price);
         } else {
           arr.push({
-            time: r.readable_time,
+            id: r.id,
+            time: r.id,
+            readable: r.readable,
             volume_usd: usd,
             price: r.price,
             fill: 0
           });
+
         }
       }
 
-      const maxBuy = Math.max(...buys.map(d => d.volume_usd)) || 1;
-      const maxSell = Math.max(...sells.map(d => d.volume_usd)) || 1;
-
-      for (const b of buys) b.fill = b.price * (b.volume_usd / maxBuy);
-      for (const s of sells) s.fill = s.price * (s.volume_usd / maxSell);
-
       updates += rows.length;
-      document.getElementById("status").textContent = "✅ " + updates + " trades | " + new Date().toLocaleTimeString();
       render();
     };
 
@@ -202,12 +222,6 @@ function prepareHTML(buyBars, sellBars, coin) {
 </body>
 </html>`;
 }
-
-
-
-
-
-
 
 async function retryGoto(page, file, retries = 5, delay = 60000) {
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -269,7 +283,9 @@ async function main() {
           side: t.side,
           price: +t.price,
           amount: +t.amount,
-          readable_time: toHHMM(t.created_at)
+          id: t.created_at,               // precise second-level key
+          readable: toHHMM(t.created_at)  // optional: still use this for tooltip
+
         }));
         await page.evaluate(rows => window.receiveNewData(rows), cleaned);
         console.log(`📈 +${updates.length} new executions`);
