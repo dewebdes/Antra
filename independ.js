@@ -12,6 +12,12 @@ let browser, page;
 let refreshCount = 0;
 let requestCount = 0;
 let tableData = [];
+let initialOrder = null;
+let previousOrder = null;
+const rankHistoryMap = {}; // symbol => [rank1, rank2, rank3...]
+
+const deltaHistoryMap = {}; // symbol => [delta1, delta2, delta3...]
+
 
 process.stdin.resume();
 process.stdin.setEncoding('utf8');
@@ -44,13 +50,73 @@ process.stdin.on('data', handleConsoleInput);
         console.log(`⚠️  [${i + 1}/${coins.length}] ${symbol} → skipped`);
       }
 
-      await updateHTML();
+      await updateHTML();  // Live update after each request
       await delay(150);
     }
 
+    // -- Only run jump + trend tracking after full loop --
+    const cleanSorted = [...tableData]
+      .filter(d => !isNaN(Number(d.delta)))
+      .sort((a, b) => Number(b.delta) - Number(a.delta));
+
+    const symbolsNow = cleanSorted.map(row => row.symbol);
+
+    if (!initialOrder) initialOrder = [...symbolsNow];
+
+    if (previousOrder) {
+      cleanSorted.forEach((row, i) => {
+        const prevIdx = previousOrder.indexOf(row.symbol);
+        const jump = prevIdx !== -1 ? prevIdx - i : 0;
+        row.jump = jump;
+
+        const initIdx = initialOrder.indexOf(row.symbol);
+        const jumpFromStart = initIdx !== -1 ? initIdx - i : 0;
+        row.jumpFromStart = jumpFromStart;
+      });
+    }
+
+    previousOrder = [...symbolsNow];
+
+    cleanSorted.forEach((row, idx) => {
+      if (!rankHistoryMap[row.symbol]) rankHistoryMap[row.symbol] = [];
+      rankHistoryMap[row.symbol].push(idx + 1); // 1-based rank
+    });
+
     console.log(`✅ Loop #${refreshCount} complete. Total requests: ${requestCount}`);
   }
+
+
 })();
+
+function generateSparkline(history, color = '#66ccff') {
+  if (!history || history.length < 2) return '';
+
+  const w = 50, h = 20;
+  const len = Math.min(history.length, 12); // limit to recent points
+  const data = history.slice(-len);
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+
+  const points = data.map((val, i) => {
+    const x = (i / (len - 1)) * w;
+    const y = h - ((val - min) / (max - min || 1)) * h;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  return `
+    <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5"/>
+    </svg>
+  `;
+}
+
+function getJumpColor(j) {
+  if (j === null || j === undefined) return '#aaa';
+  const val = Math.abs(j);
+  if (val === 0) return '#ccc'; // no move
+  if (j > 0) return '#66ff66'; // moved up
+  if (j < 0) return '#ff6666'; // moved down
+}
 
 async function getCoinsList() {
   try {
@@ -101,6 +167,9 @@ async function scanCoin(symbol) {
         ? (((pulse.enterPrice - close) / close) * 100).toFixed(2)
         : null;
 
+    // ⏺️ Delta history logging for every coin, no condition
+    if (!deltaHistoryMap[symbol]) deltaHistoryMap[symbol] = [];
+    deltaHistoryMap[symbol].push(Number(delta) || 0);
 
     return {
       symbol,
@@ -116,6 +185,10 @@ async function scanCoin(symbol) {
       enterDelta: enterDiff
     };
   } catch (e) {
+    // ⏺️ Log fallback value when scan fails
+    if (!deltaHistoryMap[symbol]) deltaHistoryMap[symbol] = [];
+    deltaHistoryMap[symbol].push(0); // or use NaN if you prefer tracking failures
+
     return {
       symbol,
       close: '-',
@@ -128,6 +201,7 @@ async function scanCoin(symbol) {
     };
   }
 }
+
 function extractPulsePoints(data) {
   const INTERVAL = 300;
   const VOL_BASELINE_WINDOW = 36;   // 3h
@@ -262,41 +336,93 @@ function evaluateConfirmationStrength(data, pulse) {
 
 function handleConsoleInput(input) {
   const trimmed = input.trim();
-  const match = trimmed.match(/^json\((\d+)\)$/i);
-  if (!match) return;
 
-  const count = parseInt(match[1]);
-  const clean = tableData.filter(d => !isNaN(Number(d.delta)));
-  const sorted = [...clean].sort((a, b) => Number(b.delta) - Number(a.delta));
-  const top = sorted.slice(0, count).map(row => ({
-    symbol: row.symbol,
-    close: row.close,
-    todayHigh: row.todayHigh,
-    high: row.high,
-    delta: row.delta,
-    volDeviation: row.volDeviation,
-    time: row.time,
-    pulse: row.pulse
-  }));
+  // -- JSON Export --
+  const jsonMatch = trimmed.match(/^json\((\d+)\)$/i);
+  if (jsonMatch) {
+    const count = parseInt(jsonMatch[1]);
+    const clean = tableData.filter(d => !isNaN(Number(d.delta)));
+    const sorted = [...clean].sort((a, b) => Number(b.delta) - Number(a.delta));
+    const top = sorted.slice(0, count).map(row => ({
+      symbol: row.symbol,
+      close: row.close,
+      todayHigh: row.todayHigh,
+      high: row.high,
+      delta: row.delta,
+      volDeviation: row.volDeviation,
+      time: row.time,
+      pulse: row.pulse
+    }));
 
-  const output = {
-    analysis_type: "breakout_dependency_analysis",
-    description: "Copilot should analyze which pumps are independent or dependent by checking external context and signal quality.",
-    data: top
-  };
+    const output = {
+      analysis_type: "breakout_dependency_analysis",
+      description: "Copilot should analyze which pumps are independent or dependent by checking external context and signal quality.",
+      data: top
+    };
 
-  const jsonString = JSON.stringify(output, null, 2);
-  console.log(`\n📦 Top ${count} breakout coins JSON:\n`);
-  console.log(jsonString);
+    const jsonString = JSON.stringify(output, null, 2);
+    console.log(`\n📦 Top ${count} breakout coins JSON:\n`);
+    console.log(jsonString);
 
-  try {
-    const copyCmd = process.platform === 'win32' ? 'clip' : 'pbcopy';
-    require('child_process').spawnSync(copyCmd, [], { input: jsonString });
-    console.log('\n✅ JSON copied to clipboard. Paste it to Copilot when ready.');
-  } catch (e) {
-    console.warn('⚠️ Clipboard copy failed:', e.message);
+    try {
+      const copyCmd = process.platform === 'win32' ? 'clip' : 'pbcopy';
+      require('child_process').spawnSync(copyCmd, [], { input: jsonString });
+      console.log('\n✅ JSON copied to clipboard. Paste it to Copilot when ready.');
+    } catch (e) {
+      console.warn('⚠️ Clipboard copy failed:', e.message);
+    }
+    return;
+  }
+
+  // -- Jump Filter Export --
+  const jumpMatch = trimmed.match(/^jump\((\-?\d+)\)$/i);
+  if (jumpMatch) {
+    const threshold = parseInt(jumpMatch[1]);
+    const candidates = tableData.filter(d => typeof d.jump === 'number' && d.jump >= threshold);
+    const symbols = candidates.map(d => d.symbol).join(',');
+    console.log(`\n🚀 Coins with jump >= ${threshold}:\n${symbols}\n`);
+
+    try {
+      const copyCmd = process.platform === 'win32' ? 'clip' : 'pbcopy';
+      require('child_process').spawnSync(copyCmd, [], { input: symbols });
+      console.log('✅ Symbol list copied to clipboard.');
+    } catch (e) {
+      console.warn('⚠️ Clipboard copy failed:', e.message);
+    }
+    return;
+  }
+
+  // -- Delta Trend Export --
+  const deltaTrendMatch = trimmed.match(/^deltatrend\((\d+)\)$/i);
+  if (deltaTrendMatch) {
+    const count = parseInt(deltaTrendMatch[1]);
+
+    const deltaSnapshots = Object.entries(deltaHistoryMap)
+      .map(([symbol, history]) => {
+        const last = history?.[history.length - 1];
+        const val = typeof last === 'number' ? last : -Infinity;
+        return { symbol, delta: val };
+      });
+
+    const sorted = deltaSnapshots
+      .filter(d => d.delta !== -Infinity)
+      .sort((a, b) => b.delta - a.delta);
+
+    const topSymbols = sorted.slice(0, count).map(d => d.symbol).join(',');
+
+    console.log(`\n📈 Top ${count} coins by Δ trend:\n${topSymbols}\n`);
+
+    try {
+      const copyCmd = process.platform === 'win32' ? 'clip' : 'pbcopy';
+      require('child_process').spawnSync(copyCmd, [], { input: topSymbols });
+      console.log('✅ Symbol list copied to clipboard.');
+    } catch (e) {
+      console.warn('⚠️ Clipboard copy failed:', e.message);
+    }
+    return;
   }
 }
+
 
 function updateRow(result) {
   const i = tableData.findIndex(r => r.symbol === result.symbol);
@@ -343,7 +469,7 @@ function generateHTML(data) {
     <table>
       <thead>
         <tr>
-          <th>#</th><th>Coin</th><th>Close</th><th>Today High</th><th>20D High</th><th>Δ%</th><th>VolDev</th><th>Drawdown</th><th>VIX</th><th>Enter</th><th>Status</th><th>Time</th><th>Strength</th>
+          <th>#</th><th>Coin</th><th>Close</th><th>Today High</th><th>20D High</th><th>Δ%</th><th>Δ Trend</th><th>VolDev</th><th>Drawdown</th><th>VIX</th><th>Enter</th><th>Status</th><th>Time</th><th>Strength</th><th>Jump</th><th>Trend</th>
         </tr>
       </thead><tbody>
         ${data.map(d => `
@@ -354,6 +480,17 @@ function generateHTML(data) {
             <td>${d.todayHigh}</td>
             <td>${d.high}</td>
             <td style="color:${Number(d.delta) > 0 ? '#66ff66' : '#ff6666'};">${d.delta}</td>
+            <td style="color:${Number(d.delta) > 0 ? '#66ff66' : '#ff6666'};">
+  ${(() => {
+      const history = deltaHistoryMap[d.symbol];
+      if (!history || history.length === 0) return '-';
+      const lastDelta = history[history.length - 1];
+      const rounded = typeof lastDelta === 'number' ? lastDelta.toFixed(2) : '-';
+      return rounded;
+    })()}
+</td>
+
+
             <td style="color:${Number(d.volDeviation) > 0 ? '#66ccff' : '#aaa'};">${d.volDeviation}</td>
             <td>${d.pulse?.currentDrawdown ?? '-'}</td>
             <td>${d.pulse?.volatilityIndex ?? '-'}</td>
@@ -361,6 +498,8 @@ function generateHTML(data) {
             <td>${d.pulse?.status ?? '-'}</td>
             <td>${d.time}</td>
             <td style="color:${getStrengthColor(d.confirmationStrength?.score)};" title="${d.confirmationStrength?.rating}">${d.confirmationStrength?.score ?? '-'}</td>
+            <td title="${d.jumpFromStart > 0 ? '+' : ''}${d.jumpFromStart} since loop #1" style="color:${getJumpColor(d.jump)};">${d.jump > 0 ? '+' : ''}${d.jump ?? '-'}</td>
+            <td>${generateSparkline(rankHistoryMap[d.symbol])}</td>
           </tr>
         `).join('')}
       </tbody>
