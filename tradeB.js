@@ -10,8 +10,8 @@ const sellDatabase = "./public/sell_orders.json";
 const profitDatabase = "./public/profit_log.json";
 
 // CoinEx API Credentials
-const ACCESS_ID = "DD053DC012674525AEE34A8C5D093C01";
-const SECRET_KEY = "6D968D2DA5629E83B42B6F99362B87F4B5E2077104D6803B";
+const ACCESS_ID = "xxx";
+const SECRET_KEY = "xxx";
 
 // Global Variables
 let buyOffers = [];
