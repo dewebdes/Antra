@@ -333,7 +333,6 @@ function evaluateConfirmationStrength(data, pulse) {
   }
 }
 
-
 function handleConsoleInput(input) {
   const trimmed = input.trim();
 
@@ -392,30 +391,63 @@ function handleConsoleInput(input) {
     return;
   }
 
-  // -- Delta Trend Export --
+  // -- Delta Trend Export (based on average movement %)
   const deltaTrendMatch = trimmed.match(/^deltatrend\((\d+)\)$/i);
   if (deltaTrendMatch) {
     const count = parseInt(deltaTrendMatch[1]);
 
     const deltaSnapshots = Object.entries(deltaHistoryMap)
       .map(([symbol, history]) => {
-        const last = history?.[history.length - 1];
-        const val = typeof last === 'number' ? last : -Infinity;
-        return { symbol, delta: val };
+        if (!history || history.length < 2) return { symbol, avgMove: -Infinity };
+
+        const changes = [];
+        for (let i = 1; i < history.length; i++) {
+          const prev = history[i - 1];
+          const curr = history[i];
+          const percentChange = ((curr - prev) / Math.abs(prev || 1)) * 100;
+          changes.push(percentChange);
+        }
+
+        const avgMove = changes.reduce((a, b) => a + b, 0) / changes.length;
+        return { symbol, avgMove };
       });
 
     const sorted = deltaSnapshots
-      .filter(d => d.delta !== -Infinity)
-      .sort((a, b) => b.delta - a.delta);
+      .filter(d => d.avgMove !== -Infinity)
+      .sort((a, b) => b.avgMove - a.avgMove);
 
     const topSymbols = sorted.slice(0, count).map(d => d.symbol).join(',');
 
-    console.log(`\n📈 Top ${count} coins by Δ trend:\n${topSymbols}\n`);
+    console.log(`\n📈 Top ${count} coins by Δ trend (avg movement):\n${topSymbols}\n`);
 
     try {
       const copyCmd = process.platform === 'win32' ? 'clip' : 'pbcopy';
       require('child_process').spawnSync(copyCmd, [], { input: topSymbols });
       console.log('✅ Symbol list copied to clipboard.');
+    } catch (e) {
+      console.warn('⚠️ Clipboard copy failed:', e.message);
+    }
+    return;
+  }
+
+  // -- Delta History Export for a Symbol
+  const deltaHistMatch = trimmed.match(/^deltahistory\(([\w]+)\)$/i);
+  if (deltaHistMatch) {
+    const symbol = deltaHistMatch[1].toUpperCase();
+    const history = deltaHistoryMap[symbol];
+
+    if (!history || history.length === 0) {
+      console.log(`\n🚫 No delta history found for ${symbol}\n`);
+      return;
+    }
+
+    const output = history.map(v => v.toFixed(2)).join(',');
+    console.log(`\n🧮 Δ History for ${symbol}:\n${output}\n`);
+
+    try {
+      const copyCmd = process.platform === 'win32' ? 'clip' : 'pbcopy';
+      require('child_process').spawnSync(copyCmd, [], { input: output });
+      console.log('✅ History copied to clipboard.');
     } catch (e) {
       console.warn('⚠️ Clipboard copy failed:', e.message);
     }
@@ -480,15 +512,44 @@ function generateHTML(data) {
             <td>${d.todayHigh}</td>
             <td>${d.high}</td>
             <td style="color:${Number(d.delta) > 0 ? '#66ff66' : '#ff6666'};">${d.delta}</td>
-            <td style="color:${Number(d.delta) > 0 ? '#66ff66' : '#ff6666'};">
+            <td style="color:${(() => {
+      const history = deltaHistoryMap[d.symbol];
+      if (!history || history.length < 2) return '#aaa';
+
+      const changes = [];
+      for (let i = 1; i < history.length; i++) {
+        const prev = history[i - 1];
+        const curr = history[i];
+        const percentChange = ((curr - prev) / Math.abs(prev || 1)) * 100;
+        changes.push(percentChange);
+      }
+
+      const avgMovement = changes.length
+        ? changes.reduce((a, b) => a + b, 0) / changes.length
+        : 0;
+
+      return avgMovement > 0 ? '#66ff66' : '#ff6666'; // green/red
+    })()}">
   ${(() => {
       const history = deltaHistoryMap[d.symbol];
-      if (!history || history.length === 0) return '-';
-      const lastDelta = history[history.length - 1];
-      const rounded = typeof lastDelta === 'number' ? lastDelta.toFixed(2) : '-';
-      return rounded;
+      if (!history || history.length < 2) return '-';
+
+      const changes = [];
+      for (let i = 1; i < history.length; i++) {
+        const prev = history[i - 1];
+        const curr = history[i];
+        const percentChange = ((curr - prev) / Math.abs(prev || 1)) * 100;
+        changes.push(percentChange);
+      }
+
+      const avgMovement = changes.length
+        ? changes.reduce((a, b) => a + b, 0) / changes.length
+        : 0;
+
+      return avgMovement.toFixed(2);
     })()}
 </td>
+
 
 
             <td style="color:${Number(d.volDeviation) > 0 ? '#66ccff' : '#aaa'};">${d.volDeviation}</td>
