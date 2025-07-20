@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DeltaTrend Tracker</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #coins {
+      white-space: pre-wrap;
+      margin-top: 1em;
+    }
+    #status {
+      color: #66ccff;
+    }
+    #countdown {
+      color: #ccc;
+      margin-top: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <h2>📈 DeltaTrend Tracker</h2>
+  <div id="status">Loading...</div>
+  <div id="countdown"></div>
+  <div id="coins"></div>
+
+  <script>
+    const API_URL = 'http://0.0.0.0:3000/deltatrend/10';
+    const REFRESH_INTERVAL_SEC = 1800; // 30 minutes
+    let countdown = REFRESH_INTERVAL_SEC;
+
+    async function fetchData() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const { timestamp, refreshCount, resetCount, top } = data;
+
+        document.getElementById('status').innerHTML =
+          `🕒 Last updated: ${formatTime(timestamp)}<br>` +
+          `🔄 Refresh Count: ${refreshCount} | Reset Count: ${resetCount}`;
+
+        let coinsText = '';
+        top.forEach(coin => {
+          coinsText += `🪙 ${coin.symbol} → ΔTrend: ${coin.avgMove.toFixed(2)}%\n`;
+        });
+        document.getElementById('coins').innerText = coinsText;
+      } catch (err) {
+        document.getElementById('status').textContent = `❌ Failed to fetch: ${err.message}`;
+        document.getElementById('coins').textContent = '';
+      }
+    }
+
+    function formatTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString();
+    }
+
+    function startCountdown() {
+      setInterval(() => {
+        countdown--;
+        document.getElementById('countdown').textContent =
+          `⏱️ Next update in: ${countdown}s`;
+
+        if (countdown <= 0) {
+          countdown = REFRESH_INTERVAL_SEC;
+          fetchData();
+        }
+      }, 1000);
+    }
+
+    fetchData();        // Initial load
+    startCountdown();   // Begin countdown loop
+  </script>
+</body>
+</html>
