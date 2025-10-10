@@ -11,6 +11,7 @@ app.use(cors());
 
 app.get('/deltatrend/:count', (req, res) => {
   const count = parseInt(req.params.count);
+
   const deltaSnapshots = Object.entries(deltaHistoryMap)
     .map(([symbol, history]) => {
       if (!history || history.length < 2) return { symbol, avgMove: -Infinity };
@@ -29,7 +30,48 @@ app.get('/deltatrend/:count', (req, res) => {
     .filter(d => d.avgMove !== -Infinity)
     .sort((a, b) => b.avgMove - a.avgMove);
 
-  const top = sorted.slice(0, count);
+  // 🔄 Sorted by live delta, matching HTML row order
+  const htmlSorted = [...tableData]
+    .filter(d => !isNaN(Number(d.delta)))
+    .sort((a, b) => Number(b.delta) - Number(a.delta));
+
+  const top = sorted.slice(0, count).map(d => {
+    const cleanSymbol = d.symbol.replace(/USDT$/, '');
+    const rowIdx = htmlSorted.findIndex(r => r.symbol === d.symbol);
+    const row = rowIdx >= 0 ? htmlSorted[rowIdx] : null;
+
+    const history = deltaHistoryMap[d.symbol] || [];
+    const changes = [];
+    for (let i = 1; i < history.length; i++) {
+      const prev = history[i - 1];
+      const curr = history[i];
+      const pct = ((curr - prev) / Math.abs(prev || 1)) * 100;
+      changes.push(pct);
+    }
+    const avgTrend = changes.length
+      ? changes.reduce((a, b) => a + b, 0) / changes.length
+      : null;
+
+    return {
+      rank: rowIdx + 1, // ✅ HTML row number
+      symbol: cleanSymbol,
+      avgMove: d.avgMove,
+      close: row?.close ?? '-',
+      todayHigh: row?.todayHigh ?? '-',
+      high: row?.high ?? '-',
+      delta: row?.delta ?? '-',
+      volDeviation: row?.volDeviation ?? '-',
+      drawdown: row?.pulse?.currentDrawdown ?? null,
+      vix: row?.pulse?.volatilityIndex ?? null,
+      enterPrice: row?.enterPrice ?? '-',
+      enterDelta: row?.enterDelta ?? '-',
+      status: row?.pulse?.status ?? '-',
+      confirmationStrength: row?.confirmationStrength ?? null,
+      jump: row?.jump ?? null,
+      jumpFromStart: row?.jumpFromStart ?? null,
+      deltaTrendAvg: avgTrend?.toFixed(2) ?? null
+    };
+  });
 
   res.json({
     timestamp: new Date().toISOString(),
@@ -38,6 +80,7 @@ app.get('/deltatrend/:count', (req, res) => {
     top
   });
 });
+
 
 
 
@@ -219,7 +262,19 @@ async function scanCoin(symbol) {
   const start = 1000000000;
   const interval = 300;
 
+  let marketCap = null;
+  let volume24h = null;
+
   try {
+    // 🔍 Fetch market cap and volume from CoinEx asset list
+    const asset = symbol.replace('USDT', '');
+    const assetRes = await axiosInstance.get('https://www.coinex.com/res/quotes/assets?sort_type=circulation_usd&offset=0&limit=8000');
+    const assetData = assetRes.data.data.data.find(c => c.asset === asset);
+    if (assetData) {
+      marketCap = Number(assetData.circulation_usd);
+      volume24h = Number(assetData.deal_amount);
+    }
+
     const res = await axiosInstance.get(
       `https://www.coinex.com/res/market/kline`,
       { params: { market: symbol, start_time: start, end_time: now, interval } }
@@ -253,7 +308,6 @@ async function scanCoin(symbol) {
         ? (((pulse.enterPrice - close) / close) * 100).toFixed(2)
         : null;
 
-    // ⏺️ Delta history logging for every coin, no condition
     if (!deltaHistoryMap[symbol]) deltaHistoryMap[symbol] = [];
     deltaHistoryMap[symbol].push(Number(delta) || 0);
 
@@ -268,12 +322,14 @@ async function scanCoin(symbol) {
       pulse,
       confirmationStrength,
       enterPrice: pulse.enterPrice ?? '-',
-      enterDelta: enterDiff
+      enterDelta: enterDiff,
+      marketCap,
+      volume24h,
+      volumeToCapRatio: (volume24h && marketCap) ? (volume24h / marketCap).toFixed(4) : null
     };
   } catch (e) {
-    // ⏺️ Log fallback value when scan fails
     if (!deltaHistoryMap[symbol]) deltaHistoryMap[symbol] = [];
-    deltaHistoryMap[symbol].push(0); // or use NaN if you prefer tracking failures
+    deltaHistoryMap[symbol].push(0);
 
     return {
       symbol,
@@ -283,7 +339,10 @@ async function scanCoin(symbol) {
       delta: 'error',
       volDeviation: '-',
       time: new Date().toISOString(),
-      pulse: null
+      pulse: null,
+      marketCap,
+      volume24h,
+      volumeToCapRatio: null
     };
   }
 }
@@ -541,12 +600,12 @@ function handleConsoleInput(input) {
   }
 }
 
-
 function updateRow(result) {
   const i = tableData.findIndex(r => r.symbol === result.symbol);
   if (i >= 0) tableData[i] = result;
   else tableData.push(result);
 }
+
 
 async function updateHTML() {
   const clean = tableData.filter(d => !isNaN(Number(d.delta)));
