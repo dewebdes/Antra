@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Stealth Anchor Tracker</title>
+    <style>
+      body {
+        background-color: #111;
+        color: #eee;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      #status {
+        color: #66ccff;
+        margin-bottom: 0.5em;
+      }
+      #countdown {
+        color: #ccc;
+        margin-bottom: 1em;
+      }
+      #copySymbolsBtn {
+        background-color: #222;
+        color: #eee;
+        border: 1px solid #444;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-bottom: 0.5em;
+      }
+      #copySymbolsBtn:hover {
+        background-color: #333;
+      }
+      #copyStatus {
+        color: #66ff66;
+        margin-bottom: 1em;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        border: 1px solid #444;
+        padding: 6px;
+        text-align: center;
+      }
+      th {
+        background-color: #222;
+        position: sticky;
+        top: 0;
+      }
+      tr:nth-child(even) {
+        background-color: #1a1a1a;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>🧮 Stealth Anchor Tracker</h2>
+    <div id="status">Loading...</div>
+    <div id="countdown"></div>
+    <button id="copySymbolsBtn">📋 Copy Symbols</button>
+    <div id="copyStatus"></div>
+    <table id="coinTable">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Symbol</th>
+          <th>Stealth Ceiling</th>
+          <th>Lowest Anchor</th>
+          <th>Current Price</th>
+          <th>Δ%</th>
+          <th>Anchor Age (days)</th>
+          <th>Avg Movement (%)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      const API_URL = "http://127.0.0.1:3001/stealthanchors/40";
+      const REFRESH_INTERVAL_SEC = 1800;
+      let countdown = REFRESH_INTERVAL_SEC;
+
+      function getDeltaColor(delta) {
+        const d = parseFloat(delta);
+        if (isNaN(d)) return "#aaa";
+        return d > 0 ? "#66ff66" : "#ff6666";
+      }
+
+      function getAvgMoveColor(val) {
+        const d = parseFloat(val);
+        if (isNaN(d)) return "#aaa";
+        if (d > 0) return "#66ff66"; // green
+        if (d < 0) return "#ff6666"; // red
+        return "#aaa"; // neutral
+      }
+
+      function startCountdown() {
+        setInterval(() => {
+          countdown--;
+          document.getElementById(
+            "countdown"
+          ).textContent = `⏱️ Next update in: ${countdown}s`;
+          if (countdown <= 0) {
+            countdown = REFRESH_INTERVAL_SEC;
+            fetchData();
+          }
+        }, 1000);
+      }
+
+      function fallbackCopy(text) {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        temp.style.position = "fixed";
+        temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        document.getElementById("copyStatus").textContent = `✅ Copied ${
+          text.split(",").length
+        } symbols to clipboard (fallback)`;
+      }
+
+      document
+        .getElementById("copySymbolsBtn")
+        .addEventListener("click", () => {
+          const rows = document.querySelectorAll("#coinTable tbody tr");
+          const symbols = Array.from(rows)
+            .map((row) => row.cells[1]?.textContent?.trim())
+            .filter(Boolean)
+            .map((s) => s.replace(/USDT$/i, "")); // remove USDT suffix
+          const symbolString = symbols.join(",");
+          if (navigator.clipboard?.writeText) {
+            navigator.clipboard
+              .writeText(symbolString)
+              .then(() => {
+                document.getElementById(
+                  "copyStatus"
+                ).textContent = `✅ Copied ${symbols.length} symbols to clipboard`;
+              })
+              .catch(() => fallbackCopy(symbolString));
+          } else {
+            fallbackCopy(symbolString);
+          }
+        });
+
+      async function fetchData() {
+        try {
+          const res = await fetch(API_URL);
+          const { timestamp, refreshCount, parallelCount, top } =
+            await res.json();
+
+          const prevSymbols = JSON.parse(
+            localStorage.getItem("prevSymbols") || "[]"
+          );
+          const newSymbols = top.map((c) => c.symbol);
+          localStorage.setItem("prevSymbols", JSON.stringify(newSymbols));
+
+          document.getElementById("status").innerHTML =
+            `🕒 Last updated: ${new Date(timestamp).toLocaleString()}<br>` +
+            `🔄 Refresh Count: ${refreshCount} | Parallel Count: ${parallelCount}`;
+
+          const tbody = document.querySelector("#coinTable tbody");
+          tbody.innerHTML = "";
+
+          top.forEach((coin, idx) => {
+            const isNew = !prevSymbols.includes(coin.symbol);
+            const deltaColor = getDeltaColor(coin.diffPercent);
+            const avgMoveColor = getAvgMoveColor(coin.avgMovement);
+
+            const row = `
+              <tr style="${isNew ? "background-color:#222;" : ""}">
+                <td>${idx + 1}</td>
+                <td>${coin.symbol}</td>
+                <td>${coin.stealthCeiling?.toFixed?.(6) ?? "-"}</td>
+                <td>${coin.lowestAnchor?.toFixed?.(6) ?? "-"}</td>
+                <td>${coin.currentPrice?.toFixed?.(6) ?? "-"}</td>
+                <td style="color:${deltaColor}">${
+              coin.diffPercent?.toFixed?.(2) ?? "-"
+            }%</td>
+                <td>${coin.diffDays ?? "-"}</td>
+                <td style="color:${avgMoveColor}">${
+              coin.avgMovement?.toFixed?.(2) ?? "-"
+            }%</td>
+              </tr>`;
+            tbody.insertAdjacentHTML("beforeend", row);
+          });
+        } catch (err) {
+          document.getElementById(
+            "status"
+          ).textContent = `❌ Fetch failed: ${err.message}`;
+          document.querySelector("#coinTable tbody").innerHTML = "";
+        }
+      }
+
+      fetchData();
+      startCountdown();
+    </script>
+  </body>
+</html>
