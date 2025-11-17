@@ -28,6 +28,67 @@ let refreshCount = 0;
 let parallelCount = 0;
 let tableData = [];
 
+
+const fs = require('fs');
+const path = require('path');
+
+// پوشه ذخیره‌سازی
+const SNAPSHOT_DIR = path.join(__dirname, 'snapshots');
+
+// مطمئن شو پوشه وجود دارد
+if (!fs.existsSync(SNAPSHOT_DIR)) {
+  fs.mkdirSync(SNAPSHOT_DIR);
+}
+
+// تابع ذخیره‌سازی
+function saveSnapshot() {
+  const snapshot = {
+    timestamp: new Date().toISOString(),
+    refreshCount,
+    parallelCount,
+    top: tableData
+  };
+  const filename = `snapshot-${Date.now()}.json`;
+  fs.writeFileSync(path.join(SNAPSHOT_DIR, filename), JSON.stringify(snapshot, null, 2));
+  console.log(`💾 Snapshot saved: ${filename}`);
+}
+
+// هر 4 ساعت یک بار ذخیره کن
+setInterval(saveSnapshot, 4 * 60 * 60 * 1000);
+
+// Add this near the bottom of your Solution-2 script
+
+function handleConsoleInput(input) {
+  const cmd = input.trim().toLowerCase();
+
+  if (cmd === 'exit') {
+    console.log('👋 Exiting...');
+    process.exit(0);
+  } else if (cmd === 'status') {
+    console.log(`RefreshCount=${refreshCount}, ParallelCount=${parallelCount}`);
+  } else if (cmd === 'resetmove') {
+    resetMove();
+  } else {
+    console.log(`Unknown command: ${cmd}`);
+  }
+}
+
+function resetMove() {
+  if (!Array.isArray(tableData)) return;
+  for (const row of tableData) {
+    row.diffPercent = 0;
+    row.avgMovement = 0;
+    // If you keep a history array, clear it:
+    if (row.movementHistory) row.movementHistory = [];
+  }
+  console.log('🔄 All movement percentages reset to 0% and histories cleared.');
+}
+
+// Attach to stdin
+process.stdin.on('data', (data) => {
+  handleConsoleInput(data.toString());
+});
+
 // --- API helpers ---
 async function getCoinsList() {
     try {
@@ -94,7 +155,7 @@ function average(arr) {
 (async () => {
     browser = await chromium.launch({
         headless: false,
-        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+        executablePath: 'C:\\Program Files\\Google\\Chrome Dev\\Application\\chrome.exe'
     });
     const context = await browser.newContext();
     page = await context.newPage();
