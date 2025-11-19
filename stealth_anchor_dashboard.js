@@ -20,7 +20,7 @@ const axiosInstance = axios.create({
 const interval = 60;
 const startTime = 1000000000;
 const anchorWindowCount = 30;
-const refreshDelayMs = 1000;
+const refreshDelayMs = 3000;
 const parallelRefreshIntervalMs = 60000;
 
 let browser, page;
